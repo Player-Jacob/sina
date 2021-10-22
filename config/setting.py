@@ -6,6 +6,7 @@
     desc: 
 """
 import logging
+import os.path
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 from tornado.util import import_object
@@ -25,7 +26,13 @@ process_executor = ProcessPoolExecutor()
 
 SINA_LOGIN_URL = "https://account.weibo.com/set/aj/iframe/schoollist?province=11&city=&type=1&_t=0&__rnd={}"
 SINA_QRCODE_URL = "https://login.sina.com.cn/sso/qrcode/image?entry=weibo&size=180&callback=STK_{}"
-COOKIE_PATH = config.SETTINGS['static_path']
+COOKIE_DIR = config.SETTINGS['static_path']
+COOKIE_PATH = os.path.join(config.SETTINGS['static_path'], 'sina-cookies.txt')
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+    'Referer': "https://weibo.com/"
+}
 
 
 def get_logger():

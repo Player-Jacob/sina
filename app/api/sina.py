@@ -24,3 +24,11 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
         else:
             data = dict(isLogin=status)
         return self.jsonify_finish(is_succ=True, data=data)
+
+
+@router.Router("/api/v1/sina-search")
+class ApiSinaSearchHandler(helper.ApiBaseHandler):
+    def get(self, *args, **kwargs):
+        key_word = self.get_argument('keyword', '')
+        start_time = self.get_argument('start_time', '')
+        end_time = self.get_argument('end_time', '')

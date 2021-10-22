@@ -5,6 +5,7 @@
     author: Ghost
     desc: 
 """
+import asyncio
 import logging
 import json
 import traceback
@@ -19,16 +20,17 @@ from config import setting
 
 
 def get_session():
-    cookie_path = os.path.join(setting.COOKIE_PATH, 'sina-cookies.txt')
+    cookie_path = os.path.join(setting.COOKIE_DIR, 'sina-cookies.txt')
 
-    if not os.path.exists(setting.COOKIE_PATH):
-        os.mkdir(setting.COOKIE_PATH)
+    if not os.path.exists(setting.COOKIE_DIR):
+        os.mkdir(setting.COOKIE_DIR)
     if not os.path.exists(cookie_path):
         with open(cookie_path, 'w') as f:
             f.write("")
 
     session = requests.session()
     session.cookies = cookiejar.LWPCookieJar(filename=cookie_path)
+    session.cookies.load(ignore_discard=True)
     session.headers.update({
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
         'Referer': "https://weibo.com/"
@@ -37,10 +39,6 @@ def get_session():
 
 
 def is_login_sina(session):
-    try:
-        session.cookies.load(ignore_discard=True)
-    except Exception:
-        pass
     status_code = session.get(setting.SINA_LOGIN_URL.format(int(time.time() * 1000))).json()['code']
     if status_code == '100000':
         logging.info('Cookies值有效，无需扫码登录！')
@@ -64,6 +62,13 @@ def get_qr_code(session):
     return qr_id, "https://{}".format(image) if image else ""
 
 
+async def main():
+    session = await get_session()
+    status = await is_login_sina()
+    print(status)
+
 if __name__ == '__main__':
-    is_login_sina(get_session())
-    get_qr_code(get_session())
+    # session = get_session()
+    # is_login_sina()
+    # get_qr_code(get_session())
+    asyncio.run(main())
