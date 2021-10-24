@@ -20,3 +20,13 @@ SETTINGS = {
     "static_path": os.path.join(PROJECT_ROOT, "static"),
     "xsrf_cookies": False,
 }
+
+MYSQL_SETTING = {
+    "HOST": "146.56.219.98",
+    "NAME": "sina",
+    "USER": "lichunxu",
+    "PASSWORD": "TT4RVhRjlJUwjEj*",
+    "PORT": 3506,
+}
+
+SCRAPY_LOG_LEVEL = 'DEBUG'

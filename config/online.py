@@ -20,3 +20,19 @@ SETTINGS = {
     "static_path": os.path.join(PROJECT_ROOT, "static"),
     "xsrf_cookies": False,
 }
+
+MYSQL_SETTING = {
+    "HOST": "",
+    "NAME": "",
+    "USER": "",
+    "PASSWORD": "",
+    "PORT": "",
+}
+
+
+REDIS_SETTING = {
+    "HOST": "",
+    "PORT": "",
+}
+
+SCRAPY_LOG_LEVEL = 'INFO'

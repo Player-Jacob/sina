@@ -6,6 +6,10 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
+
+
+from config import setting
 
 BOT_NAME = 'scrapy_spider'
 
@@ -18,13 +22,20 @@ NEWSPIDER_MODULE = 'scrapy_spider.spiders'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_FILE = os.path.join(setting.LOG_PATH, 'spider.log')
+LOG_LEVEL = setting.SCRAPY_LOG_LEVEL
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, 'w') as f:
+        f.write('')
+
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+# CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 2
 # The download delay setting will honor only one of:
 CONCURRENT_REQUESTS_PER_DOMAIN = 16
 CONCURRENT_REQUESTS_PER_IP = 16
@@ -37,21 +48,21 @@ COOKIES_ENABLED = True
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+    'Referer': "https://weibo.com/"
 }
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-SPIDER_MIDDLEWARES = {
-   'scrapy_spider.middlewares.ScrapySpiderSpiderMiddleware': 543,
-}
+# SPIDER_MIDDLEWARES = {
+#    'scrapy_spider.middlewares.ScrapySpiderSpiderMiddleware': 543,
+# }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-   'scrapy_spider.middlewares.ScrapySpiderDownloaderMiddleware': 543,
-}
+# DOWNLOADER_MIDDLEWARES = {
+#    'scrapy_spider.middlewares.ScrapySpiderDownloaderMiddleware': 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -61,9 +72,10 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'scrapy_spider.pipelines.ScrapySpiderPipeline': 300,
-# }
+ITEM_PIPELINES = {
+   'scrapy_spider.pipelines.SinaSpiderPipeline': 300,
+
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
