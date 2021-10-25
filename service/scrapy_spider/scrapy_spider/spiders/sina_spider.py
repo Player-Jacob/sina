@@ -19,10 +19,10 @@ class SinaSpider(scrapy.Spider):
     start_urls = [setting.SINA_ACCOUNT_URL.format(int(time.time() * 1000))]
     id = 0
 
-    def __init__(self, key_word=None, start='', end_time='',
+    def __init__(self, key_word=None, start_time='', end_time='',
                  search_id: int = 0, *args, **kwargs):
         super(SinaSpider, self).__init__(*args, **kwargs)
-        self.urls = self.generate_url(key_word, start, end_time)
+        self.urls = self.generate_url(key_word, start_time, end_time)
         self.search_id = search_id
 
     def start_requests(self):
@@ -42,6 +42,8 @@ class SinaSpider(scrapy.Spider):
 
         next_urls = response.xpath('//span[@class="list"]//li/a/@href')
         if not next_urls:
+            self.logger.info(f'cookie 刷新成功，即将请求目标链接')
+            self.logger.info(f'目标链接为：{self.urls}')
             for url in self.urls:
                 yield Request(url, callback=self.parse)
 
@@ -69,18 +71,18 @@ class SinaSpider(scrapy.Spider):
             html_content = ''.join(html_content) if html_content else ''
             content = re.sub('<[\s\S]*?>', '', html_content).strip()
 
-            spider_itme = SinaSpiderItem()
-            spider_itme['author'] = author[0] if author else ''
-            spider_itme['author_url'] = item_resp.urljoin(
+            spider_item = SinaSpiderItem()
+            spider_item['author'] = author[0] if author else ''
+            spider_item['author_url'] = item_resp.urljoin(
                 author_url[0]) if author_url else ''
-            spider_itme['publish_time'] = self._parse_time(
+            spider_item['publish_time'] = self._parse_time(
                 publish_time[0] if publish_time else '')
-            spider_itme['article_url'] = item_resp.urljoin(
+            spider_item['article_url'] = item_resp.urljoin(
                 article_url[0]) if article_url else ''
-            spider_itme['content'] = content
-            spider_itme['html_content'] = html_content
-            spider_itme['search_id'] = self.search_id
-            yield spider_itme
+            spider_item['content'] = content
+            spider_item['html_content'] = html_content
+            spider_item['search_id'] = self.search_id
+            yield spider_item
 
     @staticmethod
     def _parse_time(time_str: str):
@@ -137,18 +139,5 @@ class SinaSpider(scrapy.Spider):
         return [base_url]
 
 
-def start(key_word: str, start_time: str, end_time: str, search_id):
-    import sys
-    from scrapy import cmdline
-    sys.argv = ['scrapy', 'crawl', 'sina_spider', '-a', f'key_word={key_word}',
-                '-a' f'start_time={start_time}', '-a' f'end_time={end_time}',
-                '-a', f'search_id={search_id}']
-    cmdline.execute()
-
-
 if __name__ == '__main__':
     key = '疫情'
-    start_time = '2021-10-15-10'
-    end_time = '2021-10-16-14'
-    search_id = 20
-    start(key, start_time, end_time, search_id)

@@ -16,6 +16,7 @@ import re
 import time
 
 import requests
+
 from config import setting
 
 
@@ -62,13 +63,42 @@ def get_qr_code(session):
     return qr_id, "https://{}".format(image) if image else ""
 
 
-async def main():
-    session = await get_session()
-    status = await is_login_sina()
-    print(status)
+def refresh_cookies(session, qr_id):
+    headers = setting.HEADERS
+    count = 0
+    while 1 and count < 20:
+        dateurl = session.get(setting.SINA_QR_ID_URL.format(qr_id, int(time.time() * 1000), headers=headers)).text
+        xx = re.search("window.STK_\d+.\d+ && STK_\d+.\d+\(?", dateurl)
+        x = json.loads(dateurl.strip().lstrip(xx.group()).rstrip(");"))
+        retcode = x['retcode']
+        if '50114001' in str(retcode):
+            logging.info('二维码未失效，请扫码！')
+        elif '50114002' in str(retcode):
+            logging.info('已扫码，请确认！')
+        elif '50114004' in str(retcode):
+            logging.info('二维码已失效，请重新运行！')
+        elif '20000000' in str(retcode):
+            alt = x['data']['alt']
+            alturl = 'https://login.sina.com.cn/sso/login.php?entry=weibo&returntype=TEXT&crossdomain=1&cdult=3&domain=weibo.com&alt={}&savestate=30&callback=STK_{}'.format(
+                alt, int(time.time() * 100000))
+            crossDomainUrl = session.get(alturl, headers=headers).text
+            pp = re.search("STK_\d+\(?", crossDomainUrl)
+            p = json.loads(crossDomainUrl.strip().lstrip(pp.group()).rstrip(");"))
+            crossDomainUrlList = p['crossDomainUrlList']
+            session.get(crossDomainUrlList[0], headers=headers)
+            session.get(crossDomainUrlList[1] + '&action=login', headers=headers)
+            session.get(crossDomainUrlList[2], headers=headers)
+            # session.get(crossDomainUrlList[3], headers=headers)
+            logging.info('已确认，登录成功！')
+            break
+        else:
+            logging.info('其他情况', retcode)
+        count += 1
+        time.sleep(5)
+    session.cookies.save()
+    logging.info('cookies 刷新成功')
+
 
 if __name__ == '__main__':
-    # session = get_session()
-    # is_login_sina()
-    # get_qr_code(get_session())
-    asyncio.run(main())
+    session = get_session()
+    is_login_sina(session)

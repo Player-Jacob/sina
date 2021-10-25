@@ -5,8 +5,6 @@
 
 
 # useful for handling different item types with a single interface
-import datetime
-import json
 
 import pymysql
 
@@ -31,20 +29,11 @@ class SinaSpiderPipeline:
         return pymysql.connect(**adb_params)
 
     def process_item(self, item, spider):
-        result = {}
-        for k, v in item.items():
-            if isinstance(v, datetime.datetime):
-                v = v.strftime('%Y-%m-%d %H:%M:%S')
-            result[k] = v
-        self.file.write(json.dumps(result)+',\n')
-        self.file.flush()
-        # sql = 'insert into sina_weibo (author, author_url, publish_time, article_url, content, html_content) value(%s, %s, %s, %s, %s, %s)'
-        # self.cursor.execute(sql, (item['author'], item['author_url'],
-        #                           item['publish_time'],
-        #                           item['article_url'], item['content'],
-        #                           item['html_content']))
-        # # print(self.cursor.execute('select * from sina_weibo'))
-        # self.db.commit()
+        sql = 'insert into sina_weibo (author, search_id, author_url, publish_time, article_url, content, html_content) ' \
+              'value(%s, %s, %s, %s, %s, %s, %s)'
+        self.cursor.execute(sql, (item['author'], item['search_id'], item['author_url'], item['publish_time'],
+                                  item['article_url'], item['content'],  item['html_content']))
+        self.db.commit()
         return item
 
     def close_spider(self, spider):
