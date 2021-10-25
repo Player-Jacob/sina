@@ -27,6 +27,7 @@ process_executor = ProcessPoolExecutor()
 SINA_LOGIN_URL = "https://account.weibo.com/set/aj/iframe/schoollist?province=11&city=&type=1&_t=0&__rnd={}"
 SINA_QRCODE_URL = "https://login.sina.com.cn/sso/qrcode/image?entry=weibo&size=180&callback=STK_{}"
 SINA_ACCOUNT_URL = "https://account.weibo.com/set/aj/iframe/schoollist?province=11&city=&type=1&_t=0&__rnd={}"
+SINA_QR_ID_URL = 'https://login.sina.com.cn/sso/qrcode/check?entry=weibo&qrid={}&callback=STK_{}'
 COOKIE_DIR = config.SETTINGS['static_path']
 COOKIE_PATH = os.path.join(config.SETTINGS['static_path'], 'sina-cookies.txt')
 
@@ -42,6 +43,9 @@ if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 
 SCRAPY_LOG_LEVEL = config.SCRAPY_LOG_LEVEL
+
+KAFKA_REFRESH_SERVICE = config.KAFKA_REFRESH_SERVICE
+KAFKA_SPIDER_SERVICE = config.KAFKA_SPIDER_SERVICE
 
 
 def get_logger():
