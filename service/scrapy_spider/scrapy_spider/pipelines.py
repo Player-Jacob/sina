@@ -15,7 +15,6 @@ class SinaSpiderPipeline:
     def __init__(self):
         self.db = self.get_db()
         self.cursor = self.db.cursor()
-        self.file = open('weibo.json', 'w')
 
     @staticmethod
     def get_db():
@@ -39,4 +38,3 @@ class SinaSpiderPipeline:
     def close_spider(self, spider):
         self.cursor.close()
         self.db.close()
-        self.file.close()
