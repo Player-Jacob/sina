@@ -31,7 +31,10 @@ def get_session():
 
     session = requests.session()
     session.cookies = cookiejar.LWPCookieJar(filename=cookie_path)
-    session.cookies.load(ignore_discard=True)
+    try:
+        session.cookies.load(ignore_discard=True)
+    except cookiejar.LoadError:
+        pass
     session.headers.update({
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
         'Referer': "https://weibo.com/"
@@ -65,6 +68,7 @@ def get_qr_code(session):
 
 def refresh_cookies(session, qr_id):
     headers = setting.HEADERS
+    print(234124)
     count = 0
     while 1 and count < 20:
         dateurl = session.get(setting.SINA_QR_ID_URL.format(qr_id, int(time.time() * 1000), headers=headers)).text

@@ -29,11 +29,11 @@ MYSQL_SETTING = {
     "PORT": "",
 }
 
-
 REDIS_SETTING = {
     "HOST": "",
     "PORT": "",
-    "PASSWORD": ""
+    "PASSWORD": "",
+    "MAX_CONNECTIONS": ""
 }
 
 SCRAPY_LOG_LEVEL = 'INFO'
