@@ -30,3 +30,16 @@ MYSQL_SETTING = {
 }
 
 SCRAPY_LOG_LEVEL = 'DEBUG'
+
+REDIS_SETTING = {
+    "HOST": "146.56.219.98",
+    "PORT": "16379",
+    "PASSWORD": "Qm1lrYiMe8wx2sT7",
+    "MAX_CONNECTIONS": 100
+}
+
+KAFKA_REFRESH_SERVICE = {
+    'TOPIC': 'refresh',
+    'GROUP_ID': 'sina_refresh',
+    'BOOTSTRAP_SERVERS': '146.56.219.98:9092'  # 172.28.48.58:19093
+}

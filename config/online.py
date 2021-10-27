@@ -29,10 +29,18 @@ MYSQL_SETTING = {
     "PORT": "",
 }
 
-
 REDIS_SETTING = {
     "HOST": "",
     "PORT": "",
+    "PASSWORD": "",
+    "MAX_CONNECTIONS": ""
 }
 
 SCRAPY_LOG_LEVEL = 'INFO'
+
+
+KAFKA_REFRESH_SERVICE = {
+    'TOPIC': 'refresh',
+    'GROUP_ID': 'sina_refresh',
+    'bootstrap_servers': ''  # 172.28.48.58:19093
+}

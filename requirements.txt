@@ -45,3 +45,5 @@ w3lib==1.22.0
 WebOb==1.8.7
 yarl==1.7.0
 zope.interface==5.4.0
+
+PyMySQL~=1.0.2
