@@ -15,7 +15,7 @@ def start():
     data = json.loads(conn.lrange('start_urls', 0, 10)[0])
     start_time = data['start_time']
     end_time = data['end_time']
-    key_word = data['key']
+    key_word = data['keyword']
     search_id = data['search_id']
     argv = ['scrapy', 'crawl', 'sina_spider', '-a', f'key_word={key_word}',
             '-a', f'start_time={start_time}', '-a', f'end_time={end_time}',

@@ -44,7 +44,10 @@ if not os.path.exists(LOG_PATH):
 
 SCRAPY_LOG_LEVEL = config.SCRAPY_LOG_LEVEL
 
+REDIS_SETTING = config.REDIS_SETTING
+
 KAFKA_REFRESH_SERVICE = config.KAFKA_REFRESH_SERVICE
+SPIDER_STATUS_KEY = 'spider_status'
 
 
 def get_logger():

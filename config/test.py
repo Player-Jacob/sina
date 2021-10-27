@@ -32,9 +32,10 @@ MYSQL_SETTING = {
 SCRAPY_LOG_LEVEL = 'DEBUG'
 
 REDIS_SETTING = {
-    "HOST": "",
-    "PORT": "",
-    "PASSWORD": ""
+    "HOST": "146.56.219.98",
+    "PORT": "16379",
+    "PASSWORD": "Qm1lrYiMe8wx2sT7",
+    "MAX_CONNECTIONS": 100
 }
 
 KAFKA_REFRESH_SERVICE = {

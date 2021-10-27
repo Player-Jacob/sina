@@ -10,16 +10,18 @@ from tornado.web import Application
 from .api.sina import *
 from config import setting
 from libs import router
+from common import database
 
 
 class App(Application):
 
     def __init__(self):
-        print(router.Router.get_routes())
         super(App, self).__init__(
             handlers=router.Router.get_routes(),
             **setting.config.SETTINGS
         )
+        self.redis_cache = database.redis_cache()
+        self.db_pool = database.get_db_pool()
 
 
 def create_app():
