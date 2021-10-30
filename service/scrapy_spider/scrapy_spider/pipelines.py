@@ -28,10 +28,13 @@ class SinaSpiderPipeline:
         return pymysql.connect(**adb_params)
 
     def process_item(self, item, spider):
-        sql = 'insert into sina_weibo (author, search_id, author_url, publish_time, article_url, content, html_content) ' \
+        sql = 'insert into sina_weibo (author, search_id, author_url,' \
+              ' publish_time, article_url, content, html_content) ' \
               'value(%s, %s, %s, %s, %s, %s, %s)'
-        self.cursor.execute(sql, (item['author'], item['search_id'], item['author_url'], item['publish_time'],
-                                  item['article_url'], item['content'],  item['html_content']))
+        self.cursor.execute(sql, (item['author'], item['search_id'],
+                                  item['author_url'], item['publish_time'],
+                                  item['article_url'], item['content'],
+                                  item['html_content']))
         self.db.commit()
         return item
 
