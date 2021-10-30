@@ -80,16 +80,12 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             data['isDownloading'] = True
             return self.jsonify_finish(is_succ=True, data=data)
         search_id, info = record
-        info_data = {}
-        if info:
-            info_data = json.loads(info)
-        search_id = 20
         article_data = ArticleListModel.get_data_group_by_date(search_id, cursor)
         comment_data = CommentListModel.get_data_group_by_date(search_id, cursor)
         data['article_data'] = [{'date': date.decode(), 'count': count}
                                 for date, count in article_data]
         data['comment_data'] = [{'date': date.decode(), 'count': count}
                                 for date, count in comment_data]
-        data['article_cloud'] = info_data.get('article_cloud', '')
-        data['comment_cloud'] = info_data.get('comment_cloud', '')
+        data['article_cloud'] = f'static/search_{search_id}/article.png'
+        data['comment_cloud'] = f'static/search_{search_id}/comment.png'
         self.jsonify_finish(is_succ=True, data=data)
