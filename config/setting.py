@@ -42,11 +42,8 @@ LOG_PATH = os.path.join(config.PROJECT_ROOT, 'logs')
 if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 
-SCRAPY_LOG_LEVEL = config.SCRAPY_LOG_LEVEL
-
 REDIS_SETTING = config.REDIS_SETTING
 
-KAFKA_REFRESH_SERVICE = config.KAFKA_REFRESH_SERVICE
 SPIDER_STATUS_KEY = 'spider_status'
 
 

@@ -26,7 +26,7 @@ MYSQL_SETTING = {
     "NAME": "sina",
     "USER": "sina",
     "PASSWORD": "mN7cJXZJcWtzEFz3",
-    "PORT": "3306",
+    "PORT": 3306,
     # 数据库连接编码
     'DB_CHARSET': 'utf8mb4',
     # mincached : 启动时开启的闲置连接数量(缺省值 0 开始时不创建连接)
@@ -53,6 +53,6 @@ REDIS_SETTING = {
     "HOST": "localhost",
     "PORT": "6379",
     "PASSWORD": "",
-    "MAX_CONNECTIONS": "100"
+    "MAX_CONNECTIONS": 100
 }
 
