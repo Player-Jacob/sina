@@ -12,8 +12,6 @@ from typing import Optional, Awaitable, Any
 import traceback
 
 from bugsnag.tornado import BugsnagRequestHandler
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 import psutil
 from tornado import ioloop
 
@@ -66,10 +64,6 @@ class BaseRequestHandler(BugsnagRequestHandler):
     @property
     def redis_cache(self):
         return self.application.redis_cache
-
-    @property
-    def mysql_connection(self):
-        return self.application.db_pool.connection()
 
 
 class ApiBaseHandler(BaseRequestHandler):

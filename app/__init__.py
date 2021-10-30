@@ -21,7 +21,7 @@ class App(Application):
             **setting.config.SETTINGS
         )
         self.redis_cache = database.redis_cache()
-        self.db_pool = database.get_db_pool()
+        self.db_pool = database.get_conn()
 
 
 def create_app():
