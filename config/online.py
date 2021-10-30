@@ -22,25 +22,16 @@ SETTINGS = {
 }
 
 MYSQL_SETTING = {
-    "HOST": "",
-    "NAME": "",
-    "USER": "",
-    "PASSWORD": "",
-    "PORT": "",
+    "HOST": "localhost",
+    "NAME": "sina",
+    "USER": "sina",
+    "PASSWORD": "mN7cJXZJcWtzEFz3",
+    "PORT": "3306",
 }
 
 REDIS_SETTING = {
-    "HOST": "",
-    "PORT": "",
+    "HOST": "localhost",
+    "PORT": "6379",
     "PASSWORD": "",
-    "MAX_CONNECTIONS": ""
-}
-
-SCRAPY_LOG_LEVEL = 'INFO'
-
-
-KAFKA_REFRESH_SERVICE = {
-    'TOPIC': 'refresh',
-    'GROUP_ID': 'sina_refresh',
-    'bootstrap_servers': ''  # 172.28.48.58:19093
+    "MAX_CONNECTIONS": "100"
 }
