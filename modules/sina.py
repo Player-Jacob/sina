@@ -36,9 +36,7 @@ class SearchHistoryModel:
         return db.fetchone()
 
     @classmethod
-    def get_records(cls, condition, db, status=1, offset=0, limit=10):
-        if status:
-            condition['status'] =status
+    def get_records(cls, condition, db, offset=0, limit=10):
         keys, values = [], []
         for k, v in condition.items():
             keys.append(f"{k}=%s")

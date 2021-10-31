@@ -131,11 +131,15 @@ class SearchListHandler(helper.ApiBaseHandler):
     def get(self):
         page = self.get_argument('page', '')
         size = self.get_argument('size', '10')
+        status = self.get_argument('status', '1')
         page = int(page) if page.isdigit() else 1
         cursor, conn = self.application.db_pool.get_conn()
+        condition = {
+            'status': status,
+        }
         records = SearchHistoryModel.get_records(
-            {}, cursor, offset=page - 1, limit=size)
-        count = SearchHistoryModel.count_records({}, cursor)
+            condition, cursor, offset=page - 1, limit=size)
+        count = SearchHistoryModel.count_records(condition, cursor)
         records_data = [{
             'id': item[0],
             'keyword': item[1].decode(),
