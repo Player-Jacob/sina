@@ -46,7 +46,7 @@ class SearchHistoryModel:
         if keys:
             where = 'where '+' and '.join(keys)
 
-        sql = f"select id, keyword, start_time, end_time from {cls.__table__} {where} limit {offset} {limit}"
+        sql = f"select id, keyword, start_time, end_time from {cls.__table__} {where} limit {offset}, {limit}"
         db.execute(sql, values)
         return db.fetchall()
 
