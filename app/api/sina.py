@@ -103,10 +103,15 @@ class SearchListHandler(helper.ApiBaseHandler):
         cursor, conn = self.application.db_pool.get_conn()
         records = SearchHistoryModel.get_records(
             {}, cursor, offset=page-1, limit=size)
-        data = [{
+        count = SearchHistoryModel.count_records({}, cursor)
+        records_data = [{
             'id': item[0],
             'keyword':item[1].decode(),
             'start_time': item[2].strftime('%Y-%m-%d %H:%M:%S'),
             'end_time': item[3].strftime('%Y-%m-%d %H:%M:%S')}
             for item in records]
+        data = {
+            'list': records_data,
+            'total': count
+        }
         return self.jsonify_finish(is_succ=True, data=data)

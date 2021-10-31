@@ -50,6 +50,21 @@ class SearchHistoryModel:
         db.execute(sql, values)
         return db.fetchall()
 
+    @classmethod
+    def count_records(cls, condition, db):
+        keys, values = [], []
+        for k, v in condition.items():
+            keys.append(f"{k}=%s")
+            values.append(v)
+
+        where = ""
+        if keys:
+            where = 'where '+' and '.join(keys)
+
+        sql = f"select count(id) from {cls.__table__} {where}"
+        db.execute(sql, values)
+        return db.fetchone()[0]
+
 
 
 class ArticleListModel:
