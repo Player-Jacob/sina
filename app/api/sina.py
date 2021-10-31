@@ -54,10 +54,14 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 @router.Router("/api/v1/sina-search")
 class ApiSinaSearchHandler(helper.ApiBaseHandler):
     def post(self, *args, **kwargs):
-        keyword = self.get_argument('keyword', '')
-        start_time = self.get_argument('startTime', '')
-        end_time = self.get_argument('endTime', '')
-        logging.info(self.request.body, 3333333333)
+        try:
+            resp_data = json.loads(self.request.body)
+        except Exception:
+            logging.error(f'参数异常 {traceback.format_exc()}')
+            return self.jsonify_finish(error_msg='系统异常')
+        keyword = resp_data.get('keyword')
+        start_time = resp_data.get('startTime')
+        end_time = resp_data.get('endTime')
         if not all([keyword, start_time, end_time]):
             return self.jsonify_finish(error_msg='缺少参数')
         start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S'
