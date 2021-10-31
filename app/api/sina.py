@@ -55,8 +55,10 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 class ApiSinaSearchHandler(helper.ApiBaseHandler):
     def post(self, *args, **kwargs):
         keyword = self.get_argument('keyword', '')
-        start_time = self.get_argument('start_time', '')
-        end_time = self.get_argument('end_time', '')
+        start_time = self.get_argument('startTime', '')
+        end_time = self.get_argument('endTime', '')
+        if not all([keyword, start_time, end_time]):
+            return self.jsonify_finish(error_msg='缺少参数')
         cursor, conn = self.application.db_pool.get_conn()
         condition = {
             'keyword': keyword,
