@@ -9,7 +9,7 @@ import json
 import logging
 import traceback
 
-from common import helper, utils, async_decorator
+from common import helper, utils
 from libs import router
 from config import setting
 from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
@@ -18,7 +18,6 @@ from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
 @router.Router("/api/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
-    @async_decorator.decorator
     def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
@@ -35,7 +34,6 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
-    @async_decorator.decorator
     def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)

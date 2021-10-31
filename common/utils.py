@@ -18,6 +18,7 @@ import time
 import requests
 
 from config import setting
+from common import async_decorator
 
 
 def get_session():
@@ -66,6 +67,7 @@ def get_qr_code(session):
     return qr_id, "https://{}".format(image) if image else ""
 
 
+@async_decorator.decorator
 def refresh_cookies(session, qr_id):
     headers = setting.HEADERS
     count = 0
