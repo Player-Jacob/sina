@@ -69,11 +69,7 @@ class BaseRequestHandler(BugsnagRequestHandler):
 class ApiBaseHandler(BaseRequestHandler):
 
     def set_default_headers(self):
-        if isinstance(self.request.headers, dict):
-            origin = str(self.request.headers.get('Origin', '*'))
-        else:
-            origin = '*'
-
+        origin = str(self.request.headers.get('Origin', '*'))
         self.set_header('Access-Control-Allow-Origin', origin)
         self.set_header('Access-Control-Allow-Methods',
                         'POST, PUT, GET, OPTIONS, HEAD, DELETE')

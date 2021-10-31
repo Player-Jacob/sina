@@ -68,7 +68,6 @@ def get_qr_code(session):
 
 def refresh_cookies(session, qr_id):
     headers = setting.HEADERS
-    print(234124)
     count = 0
     while 1 and count < 20:
         dateurl = session.get(setting.SINA_QR_ID_URL.format(qr_id, int(time.time() * 1000), headers=headers)).text
@@ -99,8 +98,11 @@ def refresh_cookies(session, qr_id):
             logging.info('其他情况', retcode)
         count += 1
         time.sleep(5)
-    session.cookies.save()
-    logging.info('cookies 刷新成功')
+    if count < 20:
+        session.cookies.save()
+        logging.info('cookies 刷新成功')
+    else:
+        logging.info('cookies 刷新失败')
 
 
 if __name__ == '__main__':
