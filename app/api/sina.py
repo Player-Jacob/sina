@@ -59,6 +59,10 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         end_time = self.get_argument('endTime', '')
         if not all([keyword, start_time, end_time]):
             return self.jsonify_finish(error_msg='缺少参数')
+        start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S'
+                                                ).strftime('%Y-%m-%d-%H')
+        end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S'
+                                              ).strftime('%Y-%m-%d-%H')
         cursor, conn = self.application.db_pool.get_conn()
         condition = {
             'keyword': keyword,
