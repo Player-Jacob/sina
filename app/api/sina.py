@@ -45,7 +45,8 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 @router.Router("/api/v1/check-spider")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
-        status = True if self.redis_cache.get(setting.SPIDER_STATUS_KEY) else False
+        status = True if self.redis_cache.get(
+            setting.SPIDER_STATUS_KEY) else False
         data = dict(status=status)
         return self.jsonify_finish(is_succ=True, data=data)
 
@@ -81,15 +82,46 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
                 self.redis_cache.rpush('start_urls', json.dumps(spider_data))
             data['isDownloading'] = True
             return self.jsonify_finish(is_succ=True, data=data)
+        return self.jsonify_finish(error_msg=u'数据已经存在')
+
+    def get(self):
+        search_id = self.get_argument('searchId', '')
+        if not search_id:
+            return self.jsonify_finish(error_msg='缺少参数：searchId')
+        cursor, conn = self.application.db_pool.get_conn()
+        condition = {
+            'id': search_id,
+        }
+        record = SearchHistoryModel.get_record(condition, cursor)
+        if not record:
+            return self.jsonify_finish(error_msg=u'数据不存在')
         search_id, info = record
-        article_data = ArticleListModel.get_data_group_by_date(search_id, cursor)
-        comment_data = CommentListModel.get_data_group_by_date(search_id, cursor)
-        data['article_data'] = [{'date': date.decode(), 'count': count}
-                                for date, count in article_data]
-        data['comment_data'] = [{'date': date.decode(), 'count': count}
-                                for date, count in comment_data]
-        data['article_cloud'] = f'static/search_{search_id}/article.png'
-        data['comment_cloud'] = f'static/search_{search_id}/comment.png'
+        try:
+            info = json.loads(info)
+        except Exception:
+            logging.error(f'info 解析失败：\n{traceback.format_exc()}')
+            info = {}
+        article_data = ArticleListModel.get_data_group_by_date(
+            search_id, cursor)
+        comment_data = CommentListModel.get_data_group_by_date(
+            search_id, cursor)
+        comment_count_list = sorted(info.get('comment_counts', {}).items(),
+                                    key=lambda kv: (kv[1], kv[0]), reverse=True)
+        article_counts_list = sorted(info.get('article_counts', {}).items(),
+                                    key=lambda kv: (kv[1], kv[0]), reverse=True)
+        data = {
+            'commentCounts': [{'word': item[0], 'count': item[1]}
+                              for item in comment_count_list[:20]],
+            'articleCounts': [{'word': item[0], 'count': item[1]}
+                              for item in article_counts_list[:20]],
+            'articleEmotion': info.get('article_emotion', {}),
+            'commentEmotion': info.get('comment_emotion', {}),
+            'articleData': [{'date': date.decode(), 'count': count}
+                            for date, count in article_data],
+            'commentData': [{'date': date.decode(), 'count': count}
+                            for date, count in comment_data],
+            'articleCloud': f'static/search_{search_id}/article.png',
+            'commentCloud': f'static/search_{search_id}/comment.png'}
         self.jsonify_finish(is_succ=True, data=data)
 
 
@@ -102,11 +134,11 @@ class SearchListHandler(helper.ApiBaseHandler):
         page = int(page) if page.isdigit() else 1
         cursor, conn = self.application.db_pool.get_conn()
         records = SearchHistoryModel.get_records(
-            {}, cursor, offset=page-1, limit=size)
+            {}, cursor, offset=page - 1, limit=size)
         count = SearchHistoryModel.count_records({}, cursor)
         records_data = [{
             'id': item[0],
-            'keyword':item[1].decode(),
+            'keyword': item[1].decode(),
             'startTime': item[2].strftime('%Y-%m-%d %H:%M:%S'),
             'endTime': item[3].strftime('%Y-%m-%d %H:%M:%S')}
             for item in records]
