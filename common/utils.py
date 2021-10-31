@@ -105,6 +105,7 @@ def refresh_cookies(session, qr_id):
         logging.info('cookies 刷新失败')
 
 
+
 if __name__ == '__main__':
     session = get_session()
     is_login_sina(session)

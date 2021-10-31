@@ -8,6 +8,7 @@
 import json
 import logging
 import traceback
+from tornado import gen
 
 from common import helper, utils
 from libs import router
@@ -17,7 +18,9 @@ from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
 
 @router.Router("/api/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
-    async def get(self, *args, **kwargs):
+
+    @gen.coroutine
+    def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
         if not status:
@@ -33,7 +36,8 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
-    async def get(self, *args, **kwargs):
+    @gen.coroutine
+    def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
         data = dict(isLogin=status)
