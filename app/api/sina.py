@@ -120,8 +120,8 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
                             for date, count in article_data],
             'commentData': [{'date': date.decode(), 'count': count}
                             for date, count in comment_data],
-            'articleCloud': f'static/search_{search_id}/article.png',
-            'commentCloud': f'static/search_{search_id}/comment.png'}
+            'articleCloud': f'static/search_{search_id}/article.jpg',
+            'commentCloud': f'static/search_{search_id}/comment.jpg'}
         self.jsonify_finish(is_succ=True, data=data)
 
 
