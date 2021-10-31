@@ -71,7 +71,7 @@ def get_qr_code(session):
 def refresh_cookies(session, qr_id):
     headers = setting.HEADERS
     count = 0
-    while 1 and count < 5:
+    while 1 and count < 20:
         dateurl = session.get(setting.SINA_QR_ID_URL.format(qr_id, int(time.time() * 1000), headers=headers)).text
         xx = re.search("window.STK_\d+.\d+ && STK_\d+.\d+\(?", dateurl)
         x = json.loads(dateurl.strip().lstrip(xx.group()).rstrip(");"))
