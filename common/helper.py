@@ -69,12 +69,12 @@ class BaseRequestHandler(BugsnagRequestHandler):
 class ApiBaseHandler(BaseRequestHandler):
 
     def set_default_headers(self):
-        origin = str(self.request.headers.get('Origin', '*'))
-        self.set_header('Access-Control-Allow-Origin', origin)
-        self.set_header('Access-Control-Allow-Methods',
-                        'POST, PUT, GET, OPTIONS, HEAD, DELETE')
-        self.set_header('Access-Control-Max-Age', 1000)
-        self.set_header('Access-Control-Allow-Headers', '*')
+        # origin = str(self.request.headers.get('Origin', '*'))
+        # self.set_header('Access-Control-Allow-Origin', origin)
+        # self.set_header('Access-Control-Allow-Methods',
+        #                 'POST, PUT, GET, OPTIONS, HEAD, DELETE')
+        # self.set_header('Access-Control-Max-Age', 1000)
+        # self.set_header('Access-Control-Allow-Headers', '*')
         self.set_header('Content-type', 'application/json')
 
     def prepare(self):
