@@ -57,7 +57,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         keyword = self.get_argument('keyword', '')
         start_time = self.get_argument('startTime', '')
         end_time = self.get_argument('endTime', '')
-        print(self.request.body)
+        logging.info(self.request.body, 3333333333)
         if not all([keyword, start_time, end_time]):
             return self.jsonify_finish(error_msg='缺少参数')
         start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S'
