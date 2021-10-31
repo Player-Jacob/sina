@@ -17,7 +17,7 @@ from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
 
 @router.Router("/api/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
-    def get(self, *args, **kwargs):
+    async def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
         if not status:
@@ -33,7 +33,7 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
-    def get(self, *args, **kwargs):
+    async def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
         data = dict(isLogin=status)
