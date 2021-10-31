@@ -44,7 +44,7 @@ if not os.path.exists(LOG_PATH):
 
 REDIS_SETTING = config.REDIS_SETTING
 
-SPIDER_STATUS_KEY = 'spider_status'
+SPIDER_STATUS_KEY = 'spider_finished:{}'
 
 
 def get_logger():

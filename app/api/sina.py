@@ -45,8 +45,13 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 @router.Router("/api/v1/check-spider")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
-        status = True if self.redis_cache.get(
-            setting.SPIDER_STATUS_KEY) else False
+        search_id = self.get_argument('searchId', '')
+        if not search_id:
+            return self.jsonify_finish(error_msg='缺少参数')
+        redis_key = setting.SPIDER_STATUS_KEY.format(search_id)
+        status = True if self.redis_cache.get(redis_key) else False
+        if status:
+            self.redis_cache.delete(redis_key)
         data = dict(status=status)
         return self.jsonify_finish(is_succ=True, data=data)
 
@@ -93,6 +98,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
                 }
                 self.redis_cache.rpush('start_urls', json.dumps(spider_data))
             data['isDownloading'] = True
+            data['searchId'] = row_id
             return self.jsonify_finish(is_succ=True, data=data)
         return self.jsonify_finish(error_msg=u'数据已经存在')
 
