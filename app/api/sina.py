@@ -105,7 +105,7 @@ class SearchListHandler(helper.ApiBaseHandler):
             {}, cursor, offset=page-1, limit=size)
         data = [{
             'id': item[0],
-            'keyword':item[1],
+            'keyword':item[1].decode(),
             'start_time': item[2].strftime('%Y-%m-%d %H:%M:%S'),
             'end_time': item[3].strftime('%Y-%m-%d %H:%M:%S')}
             for item in records]
