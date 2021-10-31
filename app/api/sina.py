@@ -8,6 +8,7 @@
 import json
 import logging
 import traceback
+import datetime
 
 from common import helper, utils
 from libs import router
@@ -90,3 +91,22 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         data['article_cloud'] = f'static/search_{search_id}/article.png'
         data['comment_cloud'] = f'static/search_{search_id}/comment.png'
         self.jsonify_finish(is_succ=True, data=data)
+
+
+@router.Router('/api/v1/search-list')
+class SearchListHandler(helper.ApiBaseHandler):
+
+    def get(self):
+        page = self.get_argument('page', '')
+        size = self.get_argument('size', '10')
+        page = int(page) if page.isdigit() else 1
+        cursor, conn = self.application.db_pool.get_conn()
+        records = SearchHistoryModel.get_records(
+            {}, cursor, offset=page-1, limit=size)
+        data = [{
+            'id': item[0],
+            'keyword':item[1],
+            'start_time': item[2].strftime('%Y-%m-%d %H:%M:%S'),
+            'end_time': item[3].strftime('%Y-%m-%d %H:%M:%S')}
+            for item in records]
+        return self.jsonify_finish(is_succ=True, data=data)

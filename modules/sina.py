@@ -35,6 +35,22 @@ class SearchHistoryModel:
         db.execute(sql, values)
         return db.fetchone()
 
+    @classmethod
+    def get_records(cls, condition, db, offset=0, limit=10):
+        keys, values = [], []
+        for k, v in condition.items():
+            keys.append(f"{k}=%s")
+            values.append(v)
+
+        where = ""
+        if keys:
+            where = 'where '+' and '.join(keys)
+
+        sql = f"select id, keyword, start_time, end_time from {cls.__table__} {where} limit {offset} {limit}"
+        db.execute(sql, values)
+        return db.fetchall()
+
+
 
 class ArticleListModel:
     __table__ = 'article_list'
