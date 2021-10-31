@@ -73,6 +73,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
                     keyword, start_time, end_time, cursor)
             except Exception:
                 logging.error(f'数据插入失败{traceback.format_exc()}')
+                return self.jsonify_finish(error_msg=u'系统繁忙')
             else:
                 conn.commit()
                 spider_data = {
