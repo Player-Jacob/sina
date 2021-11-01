@@ -1,1 +1,0 @@
-System.register(["./vendor-legacy.4f216fd7.js"],(function(e){"use strict";var t,r,n,u;return{setters:[function(e){t=e.K,r=e.M,n=e.O,u=e.d}],execute:function(){e("default",t({setup:function(){var e=r(),t=n();return u((function(){var r=e.params,n=e.query,u=r.path;t.replace({path:"/"+u,query:n})})),function(){return""}}}))}}}));
