@@ -6,9 +6,12 @@
     desc: 
 """
 import json
+import os
 import logging
 import traceback
 import datetime
+
+from tornado.web import StaticFileHandler, HTTPError
 
 from common import helper, utils
 from libs import router
@@ -169,3 +172,13 @@ class SearchListHandler(helper.ApiBaseHandler):
             'total': count
         }
         return self.jsonify_finish(is_succ=True, data=data)
+
+
+class FileFallbackHandler(StaticFileHandler):
+    def validate_absolute_path(self, root, absolute_path):
+        try:
+            absolute_path = super().validate_absolute_path(root, absolute_path)
+        except HTTPError:
+            root = os.path.abspath(root)
+            absolute_path = os.path.join(root, self.default_filename)
+        return absolute_path
