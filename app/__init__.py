@@ -17,10 +17,6 @@ class App(Application):
 
     def __init__(self):
         routers = router.Router.get_routes()
-        routers.append((r'/(.*)', FileFallbackHandler, {
-            'path': 'templates',
-            'default_filename': 'index.html'
-        }))
         super(App, self).__init__(
             handlers=routers,
             **setting.config.SETTINGS
