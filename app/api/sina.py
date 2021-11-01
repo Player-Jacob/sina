@@ -6,12 +6,9 @@
     desc: 
 """
 import json
-import os
 import logging
 import traceback
 import datetime
-
-from tornado.web import StaticFileHandler, HTTPError
 
 from common import helper, utils
 from libs import router
@@ -19,7 +16,7 @@ from config import setting
 from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
 
 
-@router.Router("/v1/sina-index")
+@router.Router("/api/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
     def get(self, *args, **kwargs):
@@ -36,7 +33,7 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
             self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/v1/check-login")
+@router.Router("/api/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
         session = utils.get_session()
@@ -45,7 +42,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
         return self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/v1/check-spider")
+@router.Router("/api/v1/check-spider")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
         search_id = self.get_argument('searchId', '')
@@ -59,7 +56,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
         return self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/v1/sina-search")
+@router.Router("/api/v1/sina-search")
 class ApiSinaSearchHandler(helper.ApiBaseHandler):
     def post(self, *args, **kwargs):
         try:
@@ -146,7 +143,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router('/v1/search-list')
+@router.Router('/api/v1/search-list')
 class SearchListHandler(helper.ApiBaseHandler):
 
     def get(self):
@@ -172,13 +169,3 @@ class SearchListHandler(helper.ApiBaseHandler):
             'total': count
         }
         return self.jsonify_finish(is_succ=True, data=data)
-
-
-class FileFallbackHandler(StaticFileHandler):
-    def validate_absolute_path(self, root, absolute_path):
-        try:
-            absolute_path = super().validate_absolute_path(root, absolute_path)
-        except HTTPError:
-            root = os.path.abspath(root)
-            absolute_path = os.path.join(root, self.default_filename)
-        return absolute_path
