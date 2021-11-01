@@ -16,7 +16,7 @@ from config import setting
 from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
 
 
-@router.Router("/api/v1/sina-index")
+@router.Router("/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
     def get(self, *args, **kwargs):
@@ -33,7 +33,7 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
             self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/api/v1/check-login")
+@router.Router("/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
         session = utils.get_session()
@@ -42,7 +42,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
         return self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/api/v1/check-spider")
+@router.Router("/v1/check-spider")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
     def get(self, *args, **kwargs):
         search_id = self.get_argument('searchId', '')
@@ -56,7 +56,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
         return self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router("/api/v1/sina-search")
+@router.Router("/v1/sina-search")
 class ApiSinaSearchHandler(helper.ApiBaseHandler):
     def post(self, *args, **kwargs):
         try:
@@ -143,7 +143,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         self.jsonify_finish(is_succ=True, data=data)
 
 
-@router.Router('/api/v1/search-list')
+@router.Router('/v1/search-list')
 class SearchListHandler(helper.ApiBaseHandler):
 
     def get(self):
