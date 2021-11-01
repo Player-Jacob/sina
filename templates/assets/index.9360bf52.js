@@ -1,0 +1,1 @@
+import{K as a,M as r,O as e,d as s}from"./vendor.3e1d1ca5.js";var t=a({setup(){const a=r(),t=e();return s((()=>{const{params:r,query:e}=a,{path:s}=r;t.replace({path:"/"+s,query:e})})),()=>""}});export{t as default};
