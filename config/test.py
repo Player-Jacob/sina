@@ -22,7 +22,7 @@ SETTINGS = {
 }
 
 MYSQL_SETTING = {
-    "HOST": "localhost",
+    "HOST": "146.56.219.98",
     "NAME": "sina",
     "USER": "lichunxu",
     "PASSWORD": "TT4RVhRjlJUwjEj*",
@@ -50,7 +50,7 @@ MYSQL_SETTING = {
 }
 
 REDIS_SETTING = {
-    "HOST": "localhost",
+    "HOST": "146.56.219.98",
     "PORT": "16379",
     "PASSWORD": "Qm1lrYiMe8wx2sT7",
     "MAX_CONNECTIONS": 100
