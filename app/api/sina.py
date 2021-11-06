@@ -123,17 +123,15 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             search_id, cursor)
         comment_data = CommentListModel.get_data_group_by_date(
             search_id, cursor)
-        comment_count_list = sorted(info.get('comment_counts', {}).items(),
-                                    key=lambda kv: (kv[1], kv[0]), reverse=True)
-        article_counts_list = sorted(info.get('article_counts', {}).items(),
-                                    key=lambda kv: (kv[1], kv[0]), reverse=True)
+        comment_count_list = info.get('comment_counts', [])
+        article_counts_list = info.get('article_counts', [])
         data = {
             'commentCounts': [{'word': item[0], 'count': item[1]}
                               for item in comment_count_list[:20]],
             'articleCounts': [{'word': item[0], 'count': item[1]}
                               for item in article_counts_list[:20]],
-            'articleEmotion': info.get('article_emotion', {}),
-            'commentEmotion': info.get('comment_emotion', {}),
+            'articleEmotion': info.get('article_emotion', []),
+            'commentEmotion': info.get('comment_emotion', []),
             'articleData': [{'date': date.decode(), 'count': count}
                             for date, count in article_data],
             'commentData': [{'date': date.decode(), 'count': count}
