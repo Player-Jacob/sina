@@ -177,7 +177,6 @@ class SearchListHandler(helper.ApiBaseHandler):
 
 @router.Router('/api/v1/get-token')
 class TokenHandler(helper.ApiBaseHandler):
-    @utils.login_check
     def post(self):
         username = self.get_argument('username', '')
         password = self.get_argument('password', '')
