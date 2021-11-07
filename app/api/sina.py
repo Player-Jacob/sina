@@ -178,8 +178,8 @@ class SearchListHandler(helper.ApiBaseHandler):
 @router.Router('/api/v1/get-token')
 class TokenHandler(helper.ApiBaseHandler):
     def post(self):
-        username = self.get_argument('username', '')
-        password = self.get_argument('password', '')
+        username = self.get_body_argument('username', '')
+        password = self.get_body_argument('password', '')
         secret = setting.SECRET_KEY
         encry_pwd = utils.encrypt_hamc_sha256(secret, password)
         cursor, conn = self.application.db_pool.get_conn()
@@ -189,7 +189,7 @@ class TokenHandler(helper.ApiBaseHandler):
             'refreshToken': '',
             'expiration': 0
         }
-        logging.info(f'username:{username}, pwd:{password}, user:{user}')
+        # logging.info(f'username:{username}, pwd:{password}, user:{user}')
         if user:
             exp = int(time.time()) + 3600 * 24
             token, refresh_token = utils.create_token(
