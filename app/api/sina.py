@@ -189,6 +189,7 @@ class TokenHandler(helper.ApiBaseHandler):
             'refreshToken': '',
             'expiration': 0
         }
+        logging.info(f'username:{username}, pwd:{password}, user:{user}')
         if user:
             exp = int(time.time()) + 3600 * 24
             token, refresh_token = utils.create_token(
