@@ -178,8 +178,13 @@ class SearchListHandler(helper.ApiBaseHandler):
 @router.Router('/api/v1/get-token')
 class TokenHandler(helper.ApiBaseHandler):
     def post(self):
-        username = self.get_body_argument('username', '')
-        password = self.get_body_argument('password', '')
+        try:
+            data = json.loads(self.request.body)
+        except Exception :
+            logging.error(f'参数解析失败：{traceback.format_exc()}')
+            return self.jsonify_finish(error_msg=u'参数异常')
+        username = data.get('username', '')
+        password = data.get('password', '')
         secret = setting.SECRET_KEY
         encry_pwd = utils.encrypt_hamc_sha256(secret, password)
         cursor, conn = self.application.db_pool.get_conn()
