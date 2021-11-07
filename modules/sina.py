@@ -14,7 +14,6 @@ class SearchHistoryModel:
     def insert_record(cls, keyword, start_time, end_time, db):
         sql = f"insert into {cls.__table__} (keyword, start_time, end_time) " \
               f"value(%s, %s, %s)"
-        print(sql, 3333)
         db.execute(sql, (keyword, start_time, end_time))
         db.close()
 
@@ -89,3 +88,25 @@ class CommentListModel:
               f"group by days order by days"
         db.execute(sql)
         return db.fetchall()
+
+
+class UserModel:
+    __table__ = 'user'
+
+    @classmethod
+    def create_user(cls, username, password, db):
+        sql = f'insert into {cls.__table__}(username, `password`) value (%s, %s)'
+        db.execute(sql, (username, password))
+        return db.lastrowid
+
+    @classmethod
+    def get_user(cls, username, password, db):
+        sql = f'select * from {cls.__table__} where username=%s and `password`=%s'
+        count = db.execute(sql, (username, password))
+        return db.fetchone()
+
+    @classmethod
+    def get_user_by_id(cls, user_id, db):
+        sql = f'select * from {cls.__table__} where id=%s'
+        count = db.execute(sql, (user_id,))
+        return db.fetchone()

@@ -12,13 +12,19 @@ import traceback
 from http import cookiejar
 import os
 import os.path
+import functools
 import re
 import time
+import hashlib
+import hmac
 
 import requests
+import jwt
+from tornado.web import HTTPError
 
 from config import setting
 from common import async_decorator
+from modules.sina import UserModel
 
 
 def get_session():
@@ -106,6 +112,95 @@ def refresh_cookies(session, qr_id):
     else:
         logging.info('cookies 刷新失败')
 
+
+def encrypt_hamc_sha256(secret: str, data: str):
+    return hmac.new(secret.encode(), data.encode(),
+                    digestmod=hashlib.sha256).hexdigest()
+
+
+def create_token(user_id, username, exp):
+    secret = setting.SECRET_KEY
+    data = {
+        "iss": "sina",
+        "exp": exp,
+        "aud": "sina",
+        "user_id": user_id,
+        "username": username
+    }
+    token = jwt.encode(data, secret, algorithm='HS256')
+    data['grant_type'] = 'refresh'
+    refresh_token = jwt.encode(data, secret, algorithm='HS256')
+    return token, refresh_token
+
+
+def decrypt_token(token):
+    try:
+        data = jwt.decode(token, setting.SECRET_KEY,
+                          audience='sina', algorithms=['HS256'])
+    except Exception:
+        logging.warning(f'token decrypt failed:{traceback.format_exc()}')
+        data = {}
+    return data
+
+
+def verify_refresh_token(token):
+    payload = decrypt_token(token)
+    # 校验token 是否有效，以及是否是refresh token，验证通过后生成新的token 以及 refresh_token
+    if payload and payload.get('grant_type') == 'refresh':
+        # 如果需要标记此token 已经使用，需要借助redis 或者数据库（推荐redis）
+        return True, payload
+    return False, None
+
+
+def verify_bearer_token(token):
+    #  如果在生成token的时候使用了aud参数，那么校验的时候也需要添加此参数
+    payload = decrypt_token(token)
+    # 校验token 是否有效，以及不能是refresh token
+    if payload and payload.get('grant_type') != 'refresh':
+        return True, payload
+    return False, None
+
+
+def login_check(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if 'Authorization' in self.request.headers:
+            token = self.request.headers.get('Authorization').split()[-1]
+        elif self.get_argument('token', ''):
+            token = self.get_argument('token', '')
+        else:
+            raise HTTPError(401, '未登录')
+        status, data = verify_bearer_token(token)
+        user_id = data.get('user_id')
+        username = data.get('username')
+        cursor, conn = self.application.db_pool.get_conn()
+        user = UserModel.get_user_by_id(user_id, cursor)
+        if status and user and user[1].decode() == username:
+            return method(self, *args, **kwargs)
+        else:
+            raise HTTPError(401, '登录失效')
+
+    return wrapper
+
+
+def refresh_token(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if 'Authorization' in self.request.headers:
+            token = self.request.headers.get('Authorization').split()[-1]
+        else:
+            raise HTTPError(401, '未登录')
+        status, data = verify_refresh_token(token)
+        user_id = data.get('user_id')
+        username = data.get('username')
+        cursor, conn = self.application.db_pool.get_conn()
+        user = UserModel.get_user_by_id(user_id, cursor)
+        if status and user and user[1].decode() == username:
+            return method(self, *args, **kwargs)
+        else:
+            raise HTTPError(401, '登录失效')
+
+    return wrapper
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ import psutil
 from tornado import ioloop
 
 from config import setting
+from common import utils
 
 
 class BaseRequestHandler(BugsnagRequestHandler):
@@ -64,6 +65,13 @@ class BaseRequestHandler(BugsnagRequestHandler):
     @property
     def redis_cache(self):
         return self.application.redis_cache
+
+    def get_current_user(self) -> Any:
+        token = self.request.headers.get('Authorization').split()[-1]
+        if not token:
+            token = self.get_argument('token', '')
+        data = utils.decrypt_token(token)
+        return data.get('user_id')
 
 
 class ApiBaseHandler(BaseRequestHandler):

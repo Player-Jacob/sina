@@ -7,18 +7,20 @@
 """
 import json
 import logging
+import time
 import traceback
 import datetime
 
 from common import helper, utils
 from libs import router
 from config import setting
-from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel
+from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel,\
+    UserModel
 
 
 @router.Router("/api/v1/sina-index")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
-
+    @utils.login_check
     def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
@@ -35,6 +37,7 @@ class ApiSinaIndexHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/check-login")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
+    @utils.login_check
     def get(self, *args, **kwargs):
         session = utils.get_session()
         status = utils.is_login_sina(session)
@@ -44,6 +47,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/check-spider")
 class ApiSinaCheckHandler(helper.ApiBaseHandler):
+    @utils.login_check
     def get(self, *args, **kwargs):
         search_id = self.get_argument('searchId', '')
         if not search_id:
@@ -58,6 +62,7 @@ class ApiSinaCheckHandler(helper.ApiBaseHandler):
 
 @router.Router("/api/v1/sina-search")
 class ApiSinaSearchHandler(helper.ApiBaseHandler):
+    @utils.login_check
     def post(self, *args, **kwargs):
         try:
             resp_data = json.loads(self.request.body)
@@ -102,6 +107,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(is_succ=True, data=data)
         return self.jsonify_finish(error_msg=u'数据已经存在')
 
+    @utils.login_check
     def get(self):
         search_id = self.get_argument('searchId', '')
         if not search_id:
@@ -143,7 +149,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
 
 @router.Router('/api/v1/search-list')
 class SearchListHandler(helper.ApiBaseHandler):
-
+    @utils.login_check
     def get(self):
         page = self.get_argument('page', '')
         size = self.get_argument('size', '10')
@@ -167,3 +173,72 @@ class SearchListHandler(helper.ApiBaseHandler):
             'total': count
         }
         return self.jsonify_finish(is_succ=True, data=data)
+
+
+@router.Router('/api/v1/get-token')
+class TokenHandler(helper.ApiBaseHandler):
+    @utils.login_check
+    def post(self):
+        username = self.get_argument('username', '')
+        password = self.get_argument('password', '')
+        secret = setting.SECRET_KEY
+        encry_pwd = utils.encrypt_hamc_sha256(secret, password)
+        cursor, conn = self.application.db_pool.get_conn()
+        user = UserModel.get_user(username, encry_pwd, cursor)
+        data = {
+            'token': '',
+            'refreshToken': '',
+            'expiration': 0
+        }
+        if user:
+            exp = int(time.time()) + 3600 * 24
+            token, refresh_token = utils.create_token(
+                user[0], user[1].decode(), exp)
+            data['expiration'] = exp
+            data['token'] = token
+            data['refreshToken'] = refresh_token
+            return self.jsonify_finish(is_succ=True, data=data)
+        return self.jsonify_finish(error_msg='验证失败')
+
+
+@router.Router('/api/v1/refresh-token')
+class RefreshTokenHandler(helper.ApiBaseHandler):
+
+    @utils.refresh_token
+    def post(self):
+        if 'Authorization' in self.request.headers:
+            token = self.request.headers.get('Authorization').split()[-1]
+        else:
+            token = self.get_argument('token', '')
+
+        status, data = utils.verify_refresh_token(token)
+        user_id = data.get('user_id')
+        username = data.get('username')
+        exp = int(time.time()) + 3600 * 24
+        token, refresh_token = utils.create_token(user_id, username, exp)
+        data = {
+            'token': token,
+            'refreshToken': refresh_token,
+            'expiration': exp
+        }
+        return self.jsonify_finish(is_succ=True, data=data)
+
+
+@router.Router('/api/v1/user')
+class UserHandler(helper.ApiBaseHandler):
+    def post(self):
+        username = self.get_argument('username', '')
+        password = self.get_argument('password', '')
+        if not all([username, password]):
+            return self.jsonify_finish(error_msg=u'参数错误')
+        secret = setting.SECRET_KEY
+        encry_pwd = utils.encrypt_hamc_sha256(secret, password)
+        cursor, conn = self.application.db_pool.get_conn()
+        try:
+            UserModel.create_user(username, encry_pwd, cursor)
+            conn.commit()
+        except Exception:
+            logging.error(f'创建用户失败 \n {traceback.format_exc()}')
+            return self.jsonify_finish(error_msg='系统繁忙')
+        else:
+            return self.jsonify_finish(is_succ=True, error_msg='添加成功')

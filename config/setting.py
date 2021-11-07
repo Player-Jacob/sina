@@ -46,6 +46,8 @@ REDIS_SETTING = config.REDIS_SETTING
 
 SPIDER_STATUS_KEY = 'spider_finished:{}'
 
+SECRET_KEY = '4T$NR@AXTZDwhu3MWZ%plhBgEb8ZrDJz'
+
 
 def get_logger():
     logger = logging.getLogger()
