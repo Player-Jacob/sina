@@ -18,7 +18,7 @@ from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel,
     UserModel
 
 
-@router.Router("/api/v1/sina-index")
+@router.Router("/api/v1/qr-cord-url")
 class ApiSinaIndexHandler(helper.ApiBaseHandler):
     @utils.login_check
     def get(self, *args, **kwargs):
