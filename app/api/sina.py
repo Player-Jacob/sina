@@ -107,7 +107,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(is_succ=True, data=data)
         return self.jsonify_finish(error_msg=u'数据已经存在')
 
-    @utils.login_check
+    # @utils.login_check
     def get(self):
         search_id = self.get_argument('searchId', '')
         if not search_id:
@@ -129,19 +129,17 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             search_id, cursor)
         comment_data = CommentListModel.get_data_group_by_date(
             search_id, cursor)
-        comment_count_list = info.get('comment_counts', [])
-        article_counts_list = info.get('article_counts', [])
         data = {
-            'commentCounts': [{'word': item[0], 'count': item[1]}
-                              for item in comment_count_list[:20]],
-            'articleCounts': [{'word': item[0], 'count': item[1]}
-                              for item in article_counts_list[:20]],
+            'commentCounts': info.get('comment_counts', []),
+            'articleCounts': info.get('article_counts', []),
             'articleEmotion': info.get('article_emotion', []),
             'commentEmotion': info.get('comment_emotion', []),
             'articleData': [{'date': date.decode(), 'count': count}
                             for date, count in article_data],
             'commentData': [{'date': date.decode(), 'count': count}
                             for date, count in comment_data],
+            'articleGroup': info.get('a_group_count', []),
+            'commentGroup': info.get('c_group_count', []),
             'articleCloud': f'static/search_{search_id}/article.jpg',
             'commentCloud': f'static/search_{search_id}/comment.jpg'}
         self.jsonify_finish(is_succ=True, data=data)
