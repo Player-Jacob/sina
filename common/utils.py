@@ -17,6 +17,8 @@ import re
 import time
 import hashlib
 import hmac
+from io import BytesIO, StringIO
+import csv
 
 import requests
 import jwt
@@ -201,6 +203,28 @@ def refresh_token(method):
             raise HTTPError(401, '登录失效')
 
     return wrapper
+
+
+def export_to_csv(self, filename, data):
+        """接口返回文件
+
+        Arguments:
+            filename {str} -- 下载时显示的文件名
+            data {list} -- 文件正文内容
+            header {list} -- csv文件首行字说明
+        """
+        # http头 浏览器自动识别为文件下载
+        self.set_header('Content-Type', 'application/octet-stream')
+        # 下载时显示的文件名称
+        self.set_header('Content-Disposition',
+                        'attachment; filename={0}'.format(filename))
+        csv_file = StringIO()
+        writer = csv.writer(csv_file, delimiter=',')
+        for item in data:
+            print(item)
+            writer.writerow(item)
+        self.write(csv_file.getvalue())
+        return self.finish()
 
 
 if __name__ == '__main__':

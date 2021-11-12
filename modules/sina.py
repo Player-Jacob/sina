@@ -30,7 +30,7 @@ class SearchHistoryModel:
         if keys:
             where = 'where '+' and '.join(keys)
 
-        sql = f"select id, info from {cls.__table__} {where}"
+        sql = f"select id, info, keyword from {cls.__table__} {where}"
         db.execute(sql, values)
         return db.fetchone()
 
@@ -65,7 +65,6 @@ class SearchHistoryModel:
         return db.fetchone()[0]
 
 
-
 class ArticleListModel:
     __table__ = 'article_list'
 
@@ -75,6 +74,12 @@ class ArticleListModel:
               f" from {cls.__table__} where search_id = {search_id} " \
               f"group by days order by days"
         db.execute(sql)
+        return db.fetchall()
+
+    @classmethod
+    def query_records_by_search_id(cls, search_id, db):
+        sql = f"select * from {cls.__table__} where search_id = %s"
+        db.execute(sql, (search_id,))
         return db.fetchall()
 
 
@@ -87,6 +92,12 @@ class CommentListModel:
               f" from {cls.__table__} where search_id = {search_id} " \
               f"group by days order by days"
         db.execute(sql)
+        return db.fetchall()
+
+    @classmethod
+    def query_records_by_search_id(cls, search_id, db):
+        sql = f"select * from {cls.__table__} where search_id = %s"
+        db.execute(sql, (search_id,))
         return db.fetchall()
 
 
