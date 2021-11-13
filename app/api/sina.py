@@ -194,7 +194,8 @@ class TokenHandler(helper.ApiBaseHandler):
         data = {
             'token': '',
             'refreshToken': '',
-            'expiration': 0
+            'expiration': 0,
+            'nickName': ''
         }
         # logging.info(f'username:{username}, pwd:{password}, user:{user}')
         if user:
@@ -204,6 +205,7 @@ class TokenHandler(helper.ApiBaseHandler):
             data['expiration'] = exp
             data['token'] = token
             data['refreshToken'] = refresh_token
+            data['nickName'] = username
             return self.jsonify_finish(is_succ=True, data=data)
         return self.jsonify_finish(error_msg='验证失败')
 
