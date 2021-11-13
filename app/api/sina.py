@@ -7,6 +7,7 @@
 """
 import json
 import logging
+import re
 import time
 import traceback
 import datetime
@@ -255,27 +256,24 @@ class ExportArticleHandler(helper.ApiBaseHandler):
     def get(self):
         search_id = self.get_argument('searchId')
         cursor, conn = self.application.db_pool.get_conn()
-        condition = {
-            'id': search_id
-        }
-        search_info = SearchHistoryModel.get_record(condition, cursor)
         article_list = ArticleListModel.query_records_by_search_id(search_id, cursor)
 
-        article_data = []
+        article_data = [[
+            '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间', '微博链接',
+        ]]
         for item in article_list:
             article_data.append([
-                item[4].decode().encode('GB18030'),
-                item[5].decode().encode('GB18030'),
-                item[8].decode().encode('GB18030'),
+                item[4].decode(),
+                item[5].decode(),
+                re.sub('[\n]*?', '', item[8].decode()),
                 item[12],
                 item[11],
                 item[10],
                 item[7].strftime('%Y-%m-%d %H:%M:%S'),
-                item[6].decode().encode('GB18030')
+                item[6].decode()
             ])
-            print(type(item[4]))
-        keyword = search_info[2].decode()
-        utils.export_to_csv(self, keyword, article_data)
+            # print(type(item[4]))
+        utils.export_to_csv(self, '{}-article.csv'.format(search_id), article_data)
 
 
 @router.Router('/api/v1/export-comment')
@@ -284,53 +282,18 @@ class ExportCommentHandler(helper.ApiBaseHandler):
     def get(self):
         search_id = self.get_argument('searchId')
         cursor, conn = self.application.db_pool.get_conn()
-        article_list = ArticleListModel.query_records_by_search_id(search_id, cursor)
         comment_list = CommentListModel.query_records_by_search_id(search_id, cursor)
 
-        article_data = [[
-            '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间', '微博链接',
-        ]]
         comment_data = [[
-            '用户名', '评论内容', '时间', '点赞', '用户链接', '微博链接'
+            '用户名',  '用户链接', '评论内容', '时间', '点赞', '微博链接'
         ]]
-        for item in article_list:
-            article_data.append([
-                item[4].decode(),
-                item[5].decode(),
-                item[8].decode(),
-                item[12],
-                item[11],
-                item[10],
-                item[7].strftime('%Y-%m-%d %H:%M:%S'),
-                item[6].decode()
-            ])
-
         for item in comment_list:
             comment_data.append([
                 item[4].decode(),
-                item[7].decode(),
+                item[5].decode(),
+                re.sub('[\n]*?', '', item[7].decode()),
                 item[6].strftime('%Y-%m-%d %H:%M:%S'),
                 item[8],
-                item[5].decode(),
                 item[2].decode(),
             ])
-
-    def export_to_csv(self, filename, data):
-        """接口返回文件
-
-        Arguments:
-            filename {str} -- 下载时显示的文件名
-            data {list} -- 文件正文内容
-            header {list} -- csv文件首行字说明
-        """
-        # http头 浏览器自动识别为文件下载
-        self.set_header('Content-Type', 'application/octet-stream')
-        # 下载时显示的文件名称
-        self.set_header('Content-Disposition',
-                        'attachment; filename={0}'.format(filename))
-        csv_file = BytesIO()
-        writer = csv.writer(csv_file)
-        for item in data:
-            writer.writerow(item)
-        self.write(csv_file.getvalue())
-        return self.finish()
+        utils.export_to_csv(self, '{}-comment.csv'.format(search_id), comment_data)

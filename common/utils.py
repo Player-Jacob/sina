@@ -219,9 +219,9 @@ def export_to_csv(self, filename, data):
         self.set_header('Content-Disposition',
                         'attachment; filename={0}'.format(filename))
         csv_file = StringIO()
+        csv_file.write('\ufeff')
         writer = csv.writer(csv_file, delimiter=',')
         for item in data:
-            print(item)
             writer.writerow(item)
         self.write(csv_file.getvalue())
         return self.finish()
