@@ -35,7 +35,7 @@ class SearchHistoryModel:
         return db.fetchone()
 
     @classmethod
-    def get_records(cls, condition, db, offset=0, limit=10):
+    def get_records(cls, condition, db, filed='id', sort='desc', offset=0, limit=10):
         keys, values = [], []
         for k, v in condition.items():
             keys.append(f"{k}=%s")
@@ -45,7 +45,8 @@ class SearchHistoryModel:
         if keys:
             where = 'where '+' and '.join(keys)
 
-        sql = f"select id, keyword, start_time, end_time from {cls.__table__} {where} limit {offset}, {limit}"
+        sql = f"select id, keyword, start_time, end_time from {cls.__table__} " \
+              f"{where} order by {filed} {sort} limit {offset}, {limit}"
         db.execute(sql, values)
         return db.fetchall()
 
