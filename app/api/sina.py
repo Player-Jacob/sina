@@ -99,9 +99,9 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
                 'search_id': row_id
             }
             self.redis_cache.rpush('start_urls', json.dumps(spider_data))
-        data['isDownloading'] = True
-        data['searchId'] = row_id
-        return self.jsonify_finish(is_succ=True, data=data)
+            data['isDownloading'] = True
+            data['searchId'] = row_id
+            return self.jsonify_finish(is_succ=True, data=data)
 
     @utils.login_check
     def get(self):
