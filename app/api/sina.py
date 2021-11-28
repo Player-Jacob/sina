@@ -83,35 +83,27 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S'
                                               ).strftime('%Y-%m-%d-%H')
         cursor, conn = self.application.db_pool.get_conn()
-        condition = {
-            'keyword': keyword,
-            'start_time': start_time,
-            'end_time': end_time
-        }
-        record = SearchHistoryModel.get_record(condition, cursor)
         data = {'isDownloading': False}
-        if not record:
-            try:
-                row_id = SearchHistoryModel.insert_record(
-                    keyword, start_time, end_time, cursor)
-            except Exception:
-                logging.error(f'数据插入失败{traceback.format_exc()}')
-                return self.jsonify_finish(error_msg=u'系统繁忙')
-            else:
-                conn.commit()
-                spider_data = {
-                    'keyword': keyword,
-                    'start_time': start_time,
-                    'end_time': end_time,
-                    'search_id': row_id
-                }
-                self.redis_cache.rpush('start_urls', json.dumps(spider_data))
-            data['isDownloading'] = True
-            data['searchId'] = row_id
-            return self.jsonify_finish(is_succ=True, data=data)
-        return self.jsonify_finish(error_msg=u'数据已经存在')
+        try:
+            row_id = SearchHistoryModel.insert_record(
+                keyword, start_time, end_time, cursor)
+        except Exception:
+            logging.error(f'数据插入失败{traceback.format_exc()}')
+            return self.jsonify_finish(error_msg=u'系统繁忙')
+        else:
+            conn.commit()
+            spider_data = {
+                'keyword': keyword,
+                'start_time': start_time,
+                'end_time': end_time,
+                'search_id': row_id
+            }
+            self.redis_cache.rpush('start_urls', json.dumps(spider_data))
+        data['isDownloading'] = True
+        data['searchId'] = row_id
+        return self.jsonify_finish(is_succ=True, data=data)
 
-    # @utils.login_check
+    @utils.login_check
     def get(self):
         search_id = self.get_argument('searchId', '')
         if not search_id:

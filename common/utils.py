@@ -52,7 +52,10 @@ def get_session():
 
 
 def is_login_sina(session):
-    status_code = session.get(setting.SINA_LOGIN_URL.format(int(time.time() * 1000))).json()['code']
+    status_code = session.get(
+        setting.SINA_LOGIN_URL.format(int(time.time() * 1000)),
+        verify=False
+    ).json()['code']
     if status_code == '100000':
         logging.info('Cookies值有效，无需扫码登录！')
         return True
