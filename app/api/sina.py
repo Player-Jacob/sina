@@ -11,15 +11,13 @@ import re
 import time
 import traceback
 import datetime
-from io import BytesIO
 
-import csv
 
 from common import helper, utils
 from libs import router
 from config import setting
 from modules.sina import SearchHistoryModel, ArticleListModel, CommentListModel,\
-    UserModel
+    UserModel, LabelRuleModel
 
 
 @router.Router("/api/v1/qr-cord-url")
@@ -91,7 +89,6 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             logging.error(f'数据插入失败{traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
         else:
-            conn.commit()
             spider_data = {
                 'keyword': keyword,
                 'start_time': start_time,
@@ -115,7 +112,7 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         record = SearchHistoryModel.get_record(condition, cursor)
         if not record:
             return self.jsonify_finish(error_msg=u'数据不存在')
-        search_id, info, *_ = record
+        search_id, info = record['id'], record['info']
         try:
             info = json.loads(info)
         except Exception:
@@ -130,10 +127,8 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             'articleCounts': info.get('article_counts', []),
             'articleEmotion': info.get('article_emotion', []),
             'commentEmotion': info.get('comment_emotion', []),
-            'articleData': [{'date': date.decode(), 'count': count}
-                            for date, count in article_data],
-            'commentData': [{'date': date.decode(), 'count': count}
-                            for date, count in comment_data],
+            'articleData': article_data,
+            'commentData': comment_data,
             'articleGroup': info.get('a_group_count', []),
             'commentGroup': info.get('c_group_count', []),
             'articleCloud': f'static/search_{search_id}/article.jpg',
@@ -155,12 +150,12 @@ class SearchListHandler(helper.ApiBaseHandler):
         }
         records = SearchHistoryModel.get_records(
             condition, cursor, offset=page - 1, limit=size)
-        count = SearchHistoryModel.count_records(condition, cursor)
+        count = SearchHistoryModel.count_records(condition, cursor)['count']
         records_data = [{
-            'id': item[0],
-            'keyword': item[1].decode(),
-            'startTime': item[2].strftime('%Y-%m-%d %H:%M:%S'),
-            'endTime': item[3].strftime('%Y-%m-%d %H:%M:%S')}
+            'id': item['id'],
+            'keyword': item['keyword'],
+            'startTime': item['start_time'].strftime('%Y-%m-%d %H:%M:%S'),
+            'endTime': item['end_time'].strftime('%Y-%m-%d %H:%M:%S')}
             for item in records]
         data = {
             'list': records_data,
@@ -189,11 +184,10 @@ class TokenHandler(helper.ApiBaseHandler):
             'expiration': 0,
             'nickName': ''
         }
-        # logging.info(f'username:{username}, pwd:{password}, user:{user}')
         if user:
             exp = int(time.time()) + 3600 * 24
             token, refresh_token = utils.create_token(
-                user[0], user[1].decode(), exp)
+                user['id'], user['username'], exp)
             data['expiration'] = exp
             data['token'] = token
             data['refreshToken'] = refresh_token
@@ -257,16 +251,15 @@ class ExportArticleHandler(helper.ApiBaseHandler):
         ]]
         for item in article_list:
             article_data.append([
-                item[4].decode(),
-                item[5].decode(),
-                re.sub('[\n]*?', '', item[8].decode()),
-                item[12],
-                item[11],
-                item[10],
-                item[7].strftime('%Y-%m-%d %H:%M:%S'),
-                item[6].decode()
+                item['author'],
+                item['author_url'],
+                re.sub('[\n]*?', '', item['content']),
+                item['reposts_count'],
+                item['comments_count'],
+                item['attitudes_count'],
+                item['publish_time'].strftime('%Y-%m-%d %H:%M:%S'),
+                item['article_url']
             ])
-            # print(type(item[4]))
         utils.export_to_csv(self, '{}-article.csv'.format(search_id), article_data)
 
 
@@ -283,11 +276,59 @@ class ExportCommentHandler(helper.ApiBaseHandler):
         ]]
         for item in comment_list:
             comment_data.append([
-                item[4].decode(),
-                item[5].decode(),
-                re.sub('[\n]*?', '', item[7].decode()),
-                item[6].strftime('%Y-%m-%d %H:%M:%S'),
-                item[8],
-                item[2].decode(),
+                item['author'],
+                item['author_url'],
+                re.sub('[\n]*?', '', item['content']),
+                item['publish_time'].strftime('%Y-%m-%d %H:%M:%S'),
+                item['like_counts'],
+                item['article_url'],
             ])
         utils.export_to_csv(self, '{}-comment.csv'.format(search_id), comment_data)
+
+
+@router.Router('/api/v1/label-rule')
+class LabelRuleHandler(helper.ApiBaseHandler):
+    @utils.login_check
+    def get(self):
+        cursor, conn = self.application.db_pool.get_conn()
+        base_data = LabelRuleModel.get_labels({}, cursor)
+        count = LabelRuleModel.count_total_label({}, cursor)
+        data = {
+            'list': base_data,
+            'total': count
+        }
+        return self.jsonify_finish(is_succ=True, error_msg=u'', data=data)
+
+    @utils.login_check
+    def post(self):
+        try:
+            data = json.loads(self.request.body)
+        except Exception:
+            logging.error(f'参数解析失败：{traceback.format_exc()}')
+            return self.jsonify_finish(error_msg=u'参数异常')
+        label = data.get('label', '')
+        rule = data.get('rule', '')
+        if not all([label, rule]):
+            return self.jsonify_finish(error_msg=u'参数错误')
+        cursor, conn = self.application.db_pool.get_conn()
+        try:
+            LabelRuleModel.insert_label(label, rule, cursor)
+        except Exception:
+            logging.error('规则添加失败')
+            return self.jsonify_finish(error_msg=u'系统繁忙')
+        else:
+            return self.jsonify_finish(is_succ=True, error_msg=u'添加成功')
+
+    @utils.login_check
+    def delete(self):
+        label_id = self.get_argument('labelId')
+        if not label_id:
+            return self.jsonify_finish(error_msg=u'缺少参数')
+        cursor, conn = self.application.db_pool.get_conn()
+        try:
+            LabelRuleModel.del_label(label_id, cursor)
+        except Exception:
+            logging.error(f'label {label_id} 删除失败， {traceback.format_exc()}')
+            return self.jsonify_finish(error_msg=u'系统繁忙')
+        else:
+            return self.jsonify_finish(is_succ=True)

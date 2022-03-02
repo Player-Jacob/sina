@@ -61,9 +61,9 @@ class SearchHistoryModel:
         if keys:
             where = 'where '+' and '.join(keys)
 
-        sql = f"select count(id) from {cls.__table__} {where}"
+        sql = f"select count(id) `count` from {cls.__table__} {where}"
         db.execute(sql, values)
-        return db.fetchone()[0]
+        return db.fetchone()['count']
 
 
 class ArticleListModel:
@@ -71,7 +71,7 @@ class ArticleListModel:
 
     @classmethod
     def get_data_group_by_date(cls, search_id, db):
-        sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') days,count(id)" \
+        sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') `date`,count(id) `count`" \
               f" from {cls.__table__} where search_id = {search_id} " \
               f"group by days order by days"
         db.execute(sql)
@@ -89,7 +89,7 @@ class CommentListModel:
 
     @classmethod
     def get_data_group_by_date(cls, search_id, db):
-        sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') days,count(id)" \
+        sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') `date`, count(id) `count`" \
               f" from {cls.__table__} where search_id = {search_id} " \
               f"group by days order by days"
         db.execute(sql)
@@ -122,3 +122,56 @@ class UserModel:
         sql = f'select * from {cls.__table__} where id=%s'
         count = db.execute(sql, (user_id,))
         return db.fetchone()
+
+
+class LabelRuleModel:
+    __table__ = 'label_list'
+
+    @classmethod
+    def insert_label(cls, label, rule, db):
+        sql = f"insert into {cls.__table__} (label, rule) value (%s, %s);"
+        db.execute(sql, [label, rule])
+        return db.lastrowid
+
+    @classmethod
+    def update_label(cls, label_id, label, rule, db):
+        sql = f"update {cls.__table__} set label=%s, rule=%s where id=%s and is_del=0"
+        db.execute(sql, [label, rule, label_id])
+        return db.lastrowid
+
+    @classmethod
+    def del_label(cls, label_id, db):
+        sql = f"update {cls.__table__} set is_del=1 where id=%s and is_del=0"
+        db.execute(sql, [label_id])
+
+    @classmethod
+    def get_labels(cls, condition: dict, db, filed='id', sort='desc', offset=0, limit=10):
+        condition.setdefault('is_del', 0)
+        keys, values = [], []
+        for k, v in condition.items():
+            keys.append(f"{k}=%s")
+            values.append(v)
+
+        where = ""
+        if keys:
+            where = 'where ' + ' and '.join(keys)
+
+        sql = f"select id, label, rule from {cls.__table__} " \
+              f"{where} order by {filed} {sort} limit {offset}, {limit}"
+        db.execute(sql, values)
+        return db.fetchall()
+
+    @classmethod
+    def count_total_label(cls, condition: dict, db):
+        condition.setdefault('is_del', 0)
+        keys, values = [], []
+        for k, v in condition.items():
+            keys.append(f"{k}=%s")
+            values.append(v)
+
+        where = ""
+        if keys:
+            where = 'where ' + ' and '.join(keys)
+        sql = f"select count(id) `count` from {cls.__table__} {where}"
+        db.execute(sql, values)
+        return db.fetchone()['count']

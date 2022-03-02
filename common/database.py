@@ -35,8 +35,9 @@ class ConnectionPool:
                 user=setting.MYSQL_SETTING['USER'],
                 passwd=setting.MYSQL_SETTING['PASSWORD'],
                 db=setting.MYSQL_SETTING['NAME'],
-                use_unicode=False,
-                charset=setting.MYSQL_SETTING['DB_CHARSET']
+                use_unicode=True,
+                charset=setting.MYSQL_SETTING['DB_CHARSET'],
+                autocommit=True
             )
         return self.__pool.connection()
 
@@ -46,7 +47,7 @@ class ConnectionPool:
 
     def get_conn(self):
         conn = self._get_conn()
-        cursor = conn.cursor()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         return cursor, conn
 
 
