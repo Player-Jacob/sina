@@ -73,7 +73,7 @@ class ArticleListModel:
     def get_data_group_by_date(cls, search_id, db):
         sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') `date`,count(id) `count`" \
               f" from {cls.__table__} where search_id = {search_id} " \
-              f"group by days order by days"
+              f"group by `date` order by `date`"
         db.execute(sql)
         return db.fetchall()
 
@@ -97,7 +97,7 @@ class CommentListModel:
     def get_data_group_by_date(cls, search_id, db):
         sql = "select DATE_FORMAT(publish_time,'%Y-%m-%d %H') `date`, count(id) `count`" \
               f" from {cls.__table__} where search_id = {search_id} " \
-              f"group by days order by days"
+              f"group by `date` order by `date`"
         db.execute(sql)
         return db.fetchall()
 
