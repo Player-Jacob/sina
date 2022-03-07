@@ -320,7 +320,7 @@ class LabelRuleHandler(helper.ApiBaseHandler):
             else:
                 LabelRuleModel.update_label(label_id, label, rule, cursor)
         except Exception:
-            logging.error('规则添加失败')
+            logging.error(f'规则添加失败 {traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
         else:
             return self.jsonify_finish(is_succ=True, error_msg=u'添加成功')

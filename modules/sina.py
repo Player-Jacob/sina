@@ -162,7 +162,7 @@ class LabelRuleModel:
         if keys:
             where = 'where ' + ' and '.join(keys)
 
-        sql = f"select id, label, rule from {cls.__table__} " \
+        sql = f"select id labelId, label, rule from {cls.__table__} " \
               f"{where} order by {filed} {sort} limit {offset}, {limit}"
         db.execute(sql, values)
         return db.fetchall()
