@@ -308,11 +308,15 @@ class LabelRuleHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg=u'参数异常')
         label = data.get('label', '')
         rule = data.get('rule', '')
+        label_id = data.get('labelId', '')
         if not all([label, rule]):
             return self.jsonify_finish(error_msg=u'参数错误')
         cursor, conn = self.application.db_pool.get_conn()
         try:
-            LabelRuleModel.insert_label(label, rule, cursor)
+            if label_id:
+                LabelRuleModel.insert_label(label, rule, cursor)
+            else:
+                LabelRuleModel.update_label(label_id, label, rule, cursor)
         except Exception:
             logging.error('规则添加失败')
             return self.jsonify_finish(error_msg=u'系统繁忙')
@@ -332,3 +336,16 @@ class LabelRuleHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg=u'系统繁忙')
         else:
             return self.jsonify_finish(is_succ=True)
+
+
+@router.Router('/api/v1/get-points')
+class MapPointsHandler(helper.ApiBaseHandler):
+    @utils.login_check
+    def get(self):
+        search_id = self.get_argument('searchId')
+        if not search_id:
+            return self.jsonify_finish(error_msg=u'缺少参数')
+        cursor, conn = self.application.db_pool.get_conn()
+        base_data = ArticleListModel.query_points_by_search_id(search_id, cursor)
+        data = [[item['lng'], item['lat']]for item in base_data]
+        return self.jsonify_finish(is_succ=True, data=data)
