@@ -48,6 +48,13 @@ SPIDER_STATUS_KEY = 'spider_finished:{}'
 
 SECRET_KEY = '4T$NR@AXTZDwhu3MWZ%plhBgEb8ZrDJz'
 
+SINA_AUTH_URL = "https://api.weibo.com/oauth2/access_token"
+SINA_CLIENT_SECRET = config.SINA_CLIENT_SECRET
+SINA_CLIENT_ID = config.SINA_CLIENT_ID
+SINA_REDIRECT_URI = config.SINA_REDIRECT_URI
+
+SINA_TOKEN_KEY = 'sina-token'
+
 
 def get_logger():
     logger = logging.getLogger()

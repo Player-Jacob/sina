@@ -230,6 +230,23 @@ def export_to_csv(self, filename, data):
         return self.finish()
 
 
+def get_sina_token(code):
+    data = {
+        'client_id': setting.SINA_CLIENT_ID,
+        'client_secret': setting.SINA_CLIENT_SECRET,
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': setting.SINA_REDIRECT_URI
+    }
+    print(data, setting.SINA_AUTH_URL)
+    try:
+        resp = requests.post(setting.SINA_AUTH_URL, data=data).json()
+    except Exception:
+        logging.error(f'获取sina token 失败: \n 请求体：{data} \n {traceback.format_exc()}')
+        return {}
+    return resp
+
+
 if __name__ == '__main__':
     session = get_session()
     is_login_sina(session)

@@ -5,6 +5,7 @@
     author: Ghost
     desc: 
 """
+from subprocess import run
 import json
 import logging
 import re
@@ -76,15 +77,16 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
         end_time = resp_data.get('endTime')
         if not all([keyword, start_time, end_time]):
             return self.jsonify_finish(error_msg='缺少参数')
-        start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S'
-                                                ).strftime('%Y-%m-%d-%H')
-        end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S'
-                                              ).strftime('%Y-%m-%d-%H')
+        start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+        end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        token = self.redis_cache.get(setting.SINA_TOKEN_KEY)
         cursor, conn = self.application.db_pool.get_conn()
         data = {'isDownloading': False}
         try:
             row_id = SearchHistoryModel.insert_record(
                 keyword, start_time, end_time, cursor)
+            run('/code/sina/venv/bin/python3 /code/sina/sinaSpider/main.py '
+                f'{keyword} {int(start_time.timestamp())} {int(end_time.timestamp())} {row_id} {token}', shell=True)
         except Exception:
             logging.error(f'数据插入失败{traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
@@ -174,26 +176,34 @@ class TokenHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg=u'参数异常')
         username = data.get('username', '')
         password = data.get('password', '')
-        secret = setting.SECRET_KEY
-        encry_pwd = utils.encrypt_hamc_sha256(secret, password)
-        cursor, conn = self.application.db_pool.get_conn()
-        user = UserModel.get_user(username, encry_pwd, cursor)
+        auth_code = data.get('authCode', '')
+        resp = utils.get_sina_token(auth_code)
         data = {
             'token': '',
             'refreshToken': '',
             'expiration': 0,
-            'nickName': ''
+            'nickName': '',
         }
-        if user:
-            exp = int(time.time()) + 3600 * 24
-            token, refresh_token = utils.create_token(
-                user['id'], user['username'], exp)
-            data['expiration'] = exp
-            data['token'] = token
-            data['refreshToken'] = refresh_token
-            data['nickName'] = username
+        sina_token = resp.get('access_token')
+        if resp and sina_token:
+            expires_in = resp['expires_in']
+            self.redis_cache.set(setting.SINA_TOKEN_KEY, sina_token, expires_in)
+            encry_pwd = utils.encrypt_hamc_sha256(setting.SECRET_KEY, password)
+            cursor, conn = self.application.db_pool.get_conn()
+            user = UserModel.get_user(username, encry_pwd, cursor)
+            if user:
+                exp = int(time.time() + expires_in)
+                token, refresh_token = utils.create_token(
+                    user['id'], user['username'], exp)
+                data['expiration'] = exp
+                data['token'] = token
+                data['refreshToken'] = refresh_token
+                data['nickName'] = username
+                return self.jsonify_finish(is_succ=True, data=data)
+            else:
+                return self.jsonify_finish(error_msg='验证失败')
+        else:
             return self.jsonify_finish(is_succ=True, data=data)
-        return self.jsonify_finish(error_msg='验证失败')
 
 
 @router.Router('/api/v1/refresh-token')
