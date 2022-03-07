@@ -290,8 +290,10 @@ class ExportCommentHandler(helper.ApiBaseHandler):
 class LabelRuleHandler(helper.ApiBaseHandler):
     @utils.login_check
     def get(self):
+        page = int(self.get_argument('page', '1'))
+        page_size = int(self.get_argument('pageSize', '10'))
         cursor, conn = self.application.db_pool.get_conn()
-        base_data = LabelRuleModel.get_labels({}, cursor)
+        base_data = LabelRuleModel.get_labels({}, cursor, offset=(page-1)*page_size, limit=page_size)
         count = LabelRuleModel.count_total_label({}, cursor)
         data = {
             'list': base_data,
