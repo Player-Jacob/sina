@@ -91,13 +91,6 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             logging.error(f'数据插入失败{traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
         else:
-            spider_data = {
-                'keyword': keyword,
-                'start_time': start_time,
-                'end_time': end_time,
-                'search_id': row_id
-            }
-            self.redis_cache.rpush('start_urls', json.dumps(spider_data))
             data['isDownloading'] = True
             data['searchId'] = row_id
             return self.jsonify_finish(is_succ=True, data=data)
