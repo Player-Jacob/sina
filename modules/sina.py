@@ -147,7 +147,7 @@ class LabelRuleModel:
 
     @classmethod
     def del_label(cls, label_id, db):
-        sql = f"update {cls.__table__} set is_del=1 where id=%s and is_del=0"
+        sql = f"update {cls.__table__} set is_del=1 where id in %s and is_del=0"
         db.execute(sql, [label_id])
 
     @classmethod

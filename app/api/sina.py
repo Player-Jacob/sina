@@ -327,12 +327,18 @@ class LabelRuleHandler(helper.ApiBaseHandler):
 
     @utils.login_check
     def delete(self):
-        label_id = self.get_argument('labelId')
+        try:
+            data = json.loads(self.request.body)
+        except Exception:
+            logging.error(f'参数解析失败：{traceback.format_exc()}')
+            return self.jsonify_finish(error_msg=u'参数异常')
+        label_id = data.get('labelIds')
         if not label_id:
             return self.jsonify_finish(error_msg=u'缺少参数')
+        label_ids = label_id.split(',')
         cursor, conn = self.application.db_pool.get_conn()
         try:
-            LabelRuleModel.del_label(label_id, cursor)
+            LabelRuleModel.del_label(label_ids, cursor)
         except Exception:
             logging.error(f'label {label_id} 删除失败， {traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
