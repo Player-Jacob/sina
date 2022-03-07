@@ -86,7 +86,8 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             row_id = SearchHistoryModel.insert_record(
                 keyword, start_time, end_time, cursor)
             run('/code/sina/venv/bin/python3 /code/sina/sinaSpider/main.py '
-                f'{keyword} {int(start_time.timestamp())} {int(end_time.timestamp())} {row_id} {token}', shell=True)
+                f'{keyword} {int(start_time.timestamp())} {int(end_time.timestamp())} {row_id} {token.decode()}',
+                shell=True)
         except Exception:
             logging.error(f'数据插入失败{traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
