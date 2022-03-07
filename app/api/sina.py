@@ -315,7 +315,7 @@ class LabelRuleHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg=u'参数错误')
         cursor, conn = self.application.db_pool.get_conn()
         try:
-            if label_id:
+            if not label_id:
                 LabelRuleModel.insert_label(label, rule, cursor)
             else:
                 LabelRuleModel.update_label(label_id, label, rule, cursor)
