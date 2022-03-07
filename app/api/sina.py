@@ -150,7 +150,7 @@ class SearchListHandler(helper.ApiBaseHandler):
         }
         records = SearchHistoryModel.get_records(
             condition, cursor, offset=page - 1, limit=size)
-        count = SearchHistoryModel.count_records(condition, cursor)['count']
+        count = SearchHistoryModel.count_records(condition, cursor)
         records_data = [{
             'id': item['id'],
             'keyword': item['keyword'],

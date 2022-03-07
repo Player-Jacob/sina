@@ -180,7 +180,7 @@ def login_check(method):
         username = data.get('username')
         cursor, conn = self.application.db_pool.get_conn()
         user = UserModel.get_user_by_id(user_id, cursor)
-        if status and user and user[1].decode() == username:
+        if status and user and user['username'] == username:
             return method(self, *args, **kwargs)
         else:
             raise HTTPError(401, '登录失效')
