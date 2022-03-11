@@ -79,20 +79,25 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg='缺少参数')
         start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
         end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-        token = self.redis_cache.get(setting.SINA_TOKEN_KEY)
+        url_len = self.redis_cache.llen('start_urls')
+        if url_len > 0:
+            return self.jsonify_finish(error_msg=u'已有程序正在执行，请稍后再试')
         cursor, conn = self.application.db_pool.get_conn()
         data = {'isDownloading': False}
         try:
             row_id = SearchHistoryModel.insert_record(
                 keyword, start_time, end_time, cursor)
-            run('nohup /code/sina/venv/bin/python3 /code/sina/sinaSpider/main.py '
-                f'{keyword} {int(start_time.timestamp())} {int(end_time.timestamp())} {row_id} {token.decode()} > '
-                f'/code/sina/sinaSpider/spider_nohup.log 2>&1 &',
-                shell=True)
         except Exception:
             logging.error(f'数据插入失败{traceback.format_exc()}')
             return self.jsonify_finish(error_msg=u'系统繁忙')
         else:
+            json_data = {
+                'start_time': int(start_time.timestamp()),
+                'end_time': int(end_time.timestamp()),
+                'keyword': keyword,
+                'search_id': row_id
+            }
+            self.redis_cache.rpush('start_urls', json.dumps(json_data))
             data['isDownloading'] = True
             data['searchId'] = row_id
             return self.jsonify_finish(is_succ=True, data=data)
