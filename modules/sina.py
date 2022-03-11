@@ -155,8 +155,11 @@ class LabelRuleModel:
         condition.setdefault('is_del', 0)
         keys, values = [], []
         for k, v in condition.items():
-            keys.append(f"{k}=%s")
-            values.append(v)
+            if k == 'label':
+                keys.append(f"label like \'%%{str(v)}%%\'")
+            else:
+                keys.append(f"{k}=%s")
+                values.append(v)
 
         where = ""
         if keys:
@@ -172,8 +175,11 @@ class LabelRuleModel:
         condition.setdefault('is_del', 0)
         keys, values = [], []
         for k, v in condition.items():
-            keys.append(f"{k}=%s")
-            values.append(v)
+            if k == 'label':
+                keys.append(f"label like \'%%{str(v)}%%\'")
+            else:
+                keys.append(f"{k}=%s")
+                values.append(v)
 
         where = ""
         if keys:
