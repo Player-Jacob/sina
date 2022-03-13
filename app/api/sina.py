@@ -305,9 +305,13 @@ class LabelRuleHandler(helper.ApiBaseHandler):
     def get(self):
         page = int(self.get_argument('page', '1'))
         page_size = int(self.get_argument('pageSize', '10'))
+        label = self.get_argument('label', '')
         cursor, conn = self.application.db_pool.get_conn()
-        base_data = LabelRuleModel.get_labels({}, cursor, offset=(page-1)*page_size, limit=page_size)
-        count = LabelRuleModel.count_total_label({}, cursor)
+        condition = {}
+        if label:
+            condition['label'] = label
+        base_data = LabelRuleModel.get_labels(condition, cursor, offset=(page-1)*page_size, limit=page_size)
+        count = LabelRuleModel.count_total_label(condition, cursor)
         data = {
             'list': base_data,
             'total': count
