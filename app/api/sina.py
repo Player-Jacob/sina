@@ -257,7 +257,8 @@ class ExportArticleHandler(helper.ApiBaseHandler):
         article_list = ArticleListModel.query_records_by_search_id(search_id, cursor)
 
         article_data = [[
-            '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间', '微博链接',
+            '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间',
+            '微博链接', '经度', '维度'
         ]]
         for item in article_list:
             article_data.append([
@@ -268,7 +269,9 @@ class ExportArticleHandler(helper.ApiBaseHandler):
                 item['comments_count'],
                 item['attitudes_count'],
                 item['publish_time'].strftime('%Y-%m-%d %H:%M:%S'),
-                item['article_url']
+                item['article_url'],
+                item['lng'],
+                item['lat']
             ])
         utils.export_to_csv(self, '{}-article.csv'.format(search_id), article_data)
 
