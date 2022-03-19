@@ -176,34 +176,27 @@ class TokenHandler(helper.ApiBaseHandler):
             return self.jsonify_finish(error_msg=u'参数异常')
         username = data.get('username', '')
         password = data.get('password', '')
-        auth_code = data.get('authCode', '')
-        resp = utils.get_sina_token(auth_code)
+        secret = setting.SECRET_KEY
+        encry_pwd = utils.encrypt_hamc_sha256(secret, password)
+        cursor, conn = self.application.db_pool.get_conn()
+        user = UserModel.get_user(username, encry_pwd, cursor)
         data = {
             'token': '',
             'refreshToken': '',
             'expiration': 0,
-            'nickName': '',
+            'nickName': ''
         }
-        sina_token = resp.get('access_token')
-        if resp and sina_token:
-            expires_in = resp['expires_in']
-            self.redis_cache.set(setting.SINA_TOKEN_KEY, sina_token, expires_in)
-            encry_pwd = utils.encrypt_hamc_sha256(setting.SECRET_KEY, password)
-            cursor, conn = self.application.db_pool.get_conn()
-            user = UserModel.get_user(username, encry_pwd, cursor)
-            if user:
-                exp = int(time.time() + expires_in)
-                token, refresh_token = utils.create_token(
-                    user['id'], user['username'], exp)
-                data['expiration'] = exp
-                data['token'] = token
-                data['refreshToken'] = refresh_token
-                data['nickName'] = username
-                return self.jsonify_finish(is_succ=True, data=data)
-            else:
-                return self.jsonify_finish(error_msg='验证失败')
-        else:
+        # logging.info(f'username:{username}, pwd:{password}, user:{user}')
+        if user:
+            exp = int(time.time()) + 3600 * 24
+            token, refresh_token = utils.create_token(
+                user['id'], user['username'], exp)
+            data['expiration'] = exp
+            data['token'] = token
+            data['refreshToken'] = refresh_token
+            data['nickName'] = username
             return self.jsonify_finish(is_succ=True, data=data)
+        return self.jsonify_finish(error_msg='验证失败')
 
 
 @router.Router('/api/v1/refresh-token')
