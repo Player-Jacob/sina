@@ -137,6 +137,18 @@ class ApiSinaSearchHandler(helper.ApiBaseHandler):
             'commentCloud': f'static/search_{search_id}/comment.jpg'}
         self.jsonify_finish(is_succ=True, data=data)
 
+    @utils.login_check
+    def delete(self):
+        search_id = self.get_argument('searchId', '')
+        if not search_id:
+            return self.jsonify_finish(error_msg='缺少参数：searchId')
+        cursor, conn = self.application.db_pool.get_conn()
+        result = SearchHistoryModel.drop_record(search_id, cursor)
+        if result:
+            self.jsonify_finish(is_succ=True, error_msg='删除成功')
+        else:
+            self.jsonify_finish(is_succ=True, error_msg='数据不存在')
+
 
 @router.Router('/api/v1/search-list')
 class SearchListHandler(helper.ApiBaseHandler):

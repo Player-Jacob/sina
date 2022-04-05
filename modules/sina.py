@@ -65,6 +65,11 @@ class SearchHistoryModel:
         db.execute(sql, values)
         return db.fetchone()['count']
 
+    @classmethod
+    def drop_record(cls, search_id, db):
+        sql = "delete from search_history where id = %s"
+        return db.execute(sql, [search_id])
+
 
 class ArticleListModel:
     __table__ = 'article_list'
