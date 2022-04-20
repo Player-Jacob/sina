@@ -379,3 +379,32 @@ class MapPointsHandler(helper.ApiBaseHandler):
         base_data = ArticleListModel.query_points_by_search_id(search_id, cursor)
         data = [[item['lng'], item['lat']]for item in base_data]
         return self.jsonify_finish(is_succ=True, data=data)
+
+
+@router.Router('/api/v1/export-article-cate')
+class ExportArticleHandler(helper.ApiBaseHandler):
+
+    def get(self):
+        search_id = self.get_argument('searchId')
+        cursor, conn = self.application.db_pool.get_conn()
+        article_list = ArticleListModel.query_records_by_search_id(search_id, cursor)
+        data = {}
+        for item in article_list:
+            cate_list = item['cate_list'].split(',')
+            for cate in cate_list:
+                data.setdefault(cate, [[
+                    '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间',
+                    '微博链接', '经度', '维度'
+                ]]).append([
+                    item['author'],
+                    item['author_url'],
+                    re.sub('[\n]*?', '', item['content']),
+                    item['reposts_count'],
+                    item['comments_count'],
+                    item['attitudes_count'],
+                    item['publish_time'].strftime('%Y-%m-%d %H:%M:%S'),
+                    item['article_url'],
+                    item['lng'],
+                    item['lat']
+                ])
+
