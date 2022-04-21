@@ -6,6 +6,7 @@
     desc: 
 """
 from subprocess import run
+import io
 import json
 import logging
 import re
@@ -13,6 +14,7 @@ import time
 import traceback
 import datetime
 
+from openpyxl import Workbook
 
 from common import helper, utils
 from libs import router
@@ -388,14 +390,13 @@ class ExportArticleHandler(helper.ApiBaseHandler):
         search_id = self.get_argument('searchId')
         cursor, conn = self.application.db_pool.get_conn()
         article_list = ArticleListModel.query_records_by_search_id(search_id, cursor)
+        titles = ['用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间',
+                  '微博链接', '经度', '维度']
         data = {}
         for item in article_list:
             cate_list = item['cate_list'].split(',')
             for cate in cate_list:
-                data.setdefault(cate, [[
-                    '用户名', '用户主页（网址）', '微博内容', '转发', '评论', '点赞', '时间',
-                    '微博链接', '经度', '维度'
-                ]]).append([
+                data.setdefault(cate, [titles]).append([
                     item['author'],
                     item['author_url'],
                     re.sub('[\n]*?', '', item['content']),
@@ -407,4 +408,18 @@ class ExportArticleHandler(helper.ApiBaseHandler):
                     item['lng'],
                     item['lat']
                 ])
-
+        std = io.BytesIO()
+        wb = Workbook()
+        for title, content in data.items():
+            w_sheet = wb.create_sheet(title)
+            for text in content:
+                w_sheet.append(text)
+        wb.remove(wb[wb.sheetnames[0]])
+        wb.save(std)
+        # http头 浏览器自动识别为文件下载
+        self.set_header('Content-Type', 'application/octet-stream')
+        # 下载时显示的文件名称
+        self.set_header('Content-Disposition',
+                        'attachment; filename={0}.xlsx'.format(search_id))
+        self.write(std.getvalue())
+        return self.finish()
