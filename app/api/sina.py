@@ -421,5 +421,6 @@ class ExportArticleHandler(helper.ApiBaseHandler):
         # 下载时显示的文件名称
         self.set_header('Content-Disposition',
                         'attachment; filename={0}.xlsx'.format(search_id))
+        self.set_header('Filename', f'{search_id}-cate.xlsx')
         self.write(std.getvalue())
         return self.finish()
