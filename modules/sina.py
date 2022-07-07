@@ -112,6 +112,12 @@ class CommentListModel:
         db.execute(sql, (search_id,))
         return db.fetchall()
 
+    @classmethod
+    def query_points_by_search_id(cls, search_id, db):
+        sql = f"select lng, lat from {cls.__table__} where search_id = %s and lng != ''"
+        db.execute(sql, (search_id,))
+        return db.fetchall()
+
 
 class UserModel:
     __table__ = 'user'

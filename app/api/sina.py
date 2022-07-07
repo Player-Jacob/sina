@@ -375,10 +375,14 @@ class MapPointsHandler(helper.ApiBaseHandler):
     @utils.login_check
     def get(self):
         search_id = self.get_argument('searchId')
+        query_type = self.get_argument('type', 'article')
         if not search_id:
             return self.jsonify_finish(error_msg=u'缺少参数')
         cursor, conn = self.application.db_pool.get_conn()
-        base_data = ArticleListModel.query_points_by_search_id(search_id, cursor)
+        if query_type == 'article':
+            base_data = ArticleListModel.query_points_by_search_id(search_id, cursor)
+        else:
+            base_data = CommentListModel.query_points_by_search_id(search_id, cursor)
         data = [[item['lng'], item['lat']]for item in base_data]
         return self.jsonify_finish(is_succ=True, data=data)
 
